@@ -1,16 +1,16 @@
 import { Box, TextField, Button, Typography, Stack } from "@mui/material";
 import { useState } from "react";
-import Grid from "@mui/material.Grid2";
+import Grid from "@mui/material/Grid2";
 import { useNavigate } from "react-router";
 import DatePicker, { registerLocale } from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { es } from "date-fns/locale";
 import { MDBSwitch } from "mdb-react-ui-kit";
-import Dialog from "@mui.material.Dialog";
-import DialogActions from "@mui.material.DialogActions";
-import DialogContent from "@mui.material.DialogContent";
-import DialogContentText from "@mui.material.DialogContentText";
-import DialogTitle from "@mui.material.DialogTitle";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogContentText from "@mui/material/DialogContentText";
+import DialogTitle from "@mui/material/DialogTitle";
 import { apiUrl } from '../config';
 
 // Registrar el idioma español
