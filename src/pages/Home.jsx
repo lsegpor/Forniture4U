@@ -5,6 +5,10 @@ import { MDBContainer } from "mdb-react-ui-kit";
 import Carrusel from "../components/Carrusel";
 import { useLocation } from "react-router";
 
+/**
+ * Componente principal de la página de inicio.
+ * @returns {JSX.Element} El componente de la página de inicio.
+ */
 function Home() {
   const location = useLocation();
 

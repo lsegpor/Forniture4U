@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: components/BuscarComponente.jsx</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: components/BuscarComponente.jsx</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import Table from "@mui/material/Table";
+import TableBody from "@mui/material.TableBody";
+import TableCell from "@mui.material.TableCell";
+import TableContainer from "@mui.material.TableContainer";
+import TableHead from "@mui.material.TableHead";
+import TableRow from "@mui.material.TableRow";
+import Paper from "@mui.material.Paper";
+import { useState } from "react";
+import DeleteIcon from "@mui.icons-material/Delete";
+import EditIcon from "@mui.icons-material/Edit";
+import Button from "@mui.material.Button";
+import Dialog from "@mui.material.Dialog";
+import DialogActions from "@mui.material.DialogActions";
+import DialogContent from "@mui.material.DialogContent";
+import DialogContentText from "@mui.material.DialogContentText";
+import DialogTitle from "@mui.material.DialogTitle";
+import { useNavigate } from "react-router";
+import Typography from "@mui.material/Typography";
+import Box from "@mui.material.Box";
+import Grid from "@mui.material.Grid2";
+import TextField from "@mui.material.TextField";
+import { apiUrl } from "../config";
+
+/**
+ * Componente BuscarComponente que permite buscar y gestionar componentes.
+ * @returns {JSX.Element} El componente BuscarComponente.
+ */
+function BuscarComponente() {
+  const [nombre, setNombre] = useState(""); // Estado para el nombre a buscar
+  const [componentes, setComponentes] = useState([]); // Estado para almacenar los resultados de la búsqueda
+  const [open, setOpen] = useState(false);
+  const [message, setMessage] = useState("");
+  const Navigate = useNavigate();
+
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  /**
+   * Maneja la eliminación de un componente.
+   * @param {number} id_componente - El ID del componente a eliminar.
+   */
+  const handleDelete = async (id_componente) => {
+    try {
+      const response = await fetch(apiUrl + `/componentes/${id_componente}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        setComponentes((prevRows) =>
+          prevRows.filter((row) => row.id_componente !== id_componente)
+        );
+        setMessage(
+          `Componente con ID ${id_componente} eliminado correctamente`
+        );
+      } else {
+        setMessage(`Error al eliminar el componente con ID ${id_componente}`);
+      }
+      handleClickOpen();
+    } catch (error) {
+      console.error("Error al realizar la solicitud:", error);
+      setMessage("Error al realizar la solicitud"); // Mensaje de error
+      handleClickOpen();
+    }
+  };
+
+  /**
+   * Maneja la búsqueda de componentes por nombre.
+   */
+  const handleSearch = async () => {
+    try {
+      const response = await fetch(
+        apiUrl + `/componentes/buscar?nombre=${nombre}`
+      );
+      const data = await response.json();
+
+      if (response.ok) {
+        setComponentes(data); // Actualizar el estado con los resultados de la búsqueda
+      } else {
+        setComponentes([]); // Limpiar los resultados
+      }
+    } catch (error) {
+      console.error("Error al obtener componentes:", error);
+      setComponentes([]); // Limpiar los resultados en caso de error
+    }
+  };
+
+  return (
+    &lt;>
+      &lt;Typography variant="h4" align="center" sx={{ m: 4, color: "#332f2d" }}>
+        Buscar componentes
+      &lt;/Typography>
+
+      &lt;Box sx={{ maxWidth: 600, mx: "auto", mb: 4 }}>
+        &lt;Grid
+          container
+          spacing={2}
+          alignItems="center"
+          sx={{ justifyContent: "center" }}
+        >
+          &lt;Grid item xs={8}>
+            &lt;TextField
+              label="Nombre del Componente"
+              fullWidth
+              value={nombre}
+              onChange={(e) => setNombre(e.target.value)} // Actualizar el valor del input
+              variant="outlined"
+            />
+          &lt;/Grid>
+          &lt;Grid item xs={4}>
+            &lt;Button
+              variant="contained"
+              onClick={handleSearch}
+              sx={{ height: "100%", backgroundColor: "#da6429" }}
+            >
+              Buscar
+            &lt;/Button>
+          &lt;/Grid>
+        &lt;/Grid>
+      &lt;/Box>
+
+      &lt;Box sx={{ mx: 10 }}>
+        &lt;TableContainer component={Paper} sx={{ my: 2 }}>
+          &lt;Table sx={{ minWidth: 650 }} aria-label="simple table">
+            &lt;TableHead sx={{ backgroundColor: "#e2d0c6" }}>
+              &lt;TableRow>
+                &lt;TableCell align="center">IDCOMPONENTE&lt;/TableCell>
+                &lt;TableCell align="center">NOMBRE&lt;/TableCell>
+                &lt;TableCell align="center">PRECIO&lt;/TableCell>
+                &lt;TableCell align="center">FECHA DE IMPORTACIÓN&lt;/TableCell>
+                &lt;TableCell align="center">EN STOCK&lt;/TableCell>
+                &lt;TableCell align="center">MATERIAL&lt;/TableCell>
+                &lt;TableCell align="center">ELIMINAR&lt;/TableCell>
+                &lt;TableCell align="center">EDITAR&lt;/TableCell>
+              &lt;/TableRow>
+            &lt;/TableHead>
+            &lt;TableBody>
+              {componentes.map((row) => (
+                &lt;TableRow
+                  key={row.id_componente}
+                  sx={{ "&amp;:last-child td, &amp;:last-child th": { border: 0 } }}
+                >
+                  &lt;TableCell align="center">{row.id_componente}&lt;/TableCell>
+                  &lt;TableCell align="center">{row.nombre}&lt;/TableCell>
+                  &lt;TableCell align="center">{row.precio + "€"}&lt;/TableCell>
+                  &lt;TableCell align="center">{row.fecha_importacion}&lt;/TableCell>
+                  &lt;TableCell align="center">
+                    {row.en_stock ? "Sí" : "No"}
+                  &lt;/TableCell>
+                  &lt;TableCell align="center">{row.material}&lt;/TableCell>
+                  &lt;TableCell align="center">
+                    &lt;Button
+                      onClick={() => handleDelete(row.id_componente)}
+                      style={{
+                        background: "none",
+                        border: "none",
+                        cursor: "pointer",
+                        padding: 0,
+                      }}
+                    >
+                      &lt;DeleteIcon sx={{ color: "black" }} />
+                    &lt;/Button>
+                  &lt;/TableCell>
+                  &lt;TableCell align="center">
+                    &lt;Button
+                      onClick={() =>
+                        Navigate("/modificarcomponente/" + row.id_componente)
+                      }
+                      style={{
+                        background: "none",
+                        border: "none",
+                        cursor: "pointer",
+                        padding: 0,
+                      }}
+                    >
+                      &lt;EditIcon sx={{ color: "black" }} />
+                    &lt;/Button>
+                  &lt;/TableCell>
+                &lt;/TableRow>
+              ))}
+            &lt;/TableBody>
+          &lt;/Table>
+        &lt;/TableContainer>
+      &lt;/Box>
+
+      &lt;Dialog
+        open={open}
+        keepMounted
+        onClose={handleClose}
+        aria-describedby="alert-dialog-slide-description"
+      >
+        &lt;DialogTitle>Estado de eliminación&lt;/DialogTitle>
+        &lt;DialogContent>
+          &lt;DialogContentText id="alert-dialog-slide-description">
+            {message}
+          &lt;/DialogContentText>
+        &lt;/DialogContent>
+        &lt;DialogActions>
+          &lt;Button onClick={handleClose}>Cerrar&lt;/Button>
+        &lt;/DialogActions>
+      &lt;/Dialog>
+    &lt;/>
+  );
+}
+
+export default BuscarComponente;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#AltaComponente">AltaComponente</a></li><li><a href="global.html#AltaMueble">AltaMueble</a></li><li><a href="global.html#BuscarComponente">BuscarComponente</a></li><li><a href="global.html#BuscarMueble">BuscarMueble</a></li><li><a href="global.html#Carrusel">Carrusel</a></li><li><a href="global.html#Footer">Footer</a></li><li><a href="global.html#Home">Home</a></li><li><a href="global.html#ListadoComponentes">ListadoComponentes</a></li><li><a href="global.html#ListadoComponentesMateriales">ListadoComponentesMateriales</a></li><li><a href="global.html#ListadoMuebles">ListadoMuebles</a></li><li><a href="global.html#ListadoMueblesFecha">ListadoMueblesFecha</a></li><li><a href="global.html#Menu">Menu</a></li><li><a href="global.html#ModificarComponente">ModificarComponente</a></li><li><a href="global.html#ModificarMueble">ModificarMueble</a></li><li><a href="global.html#MuebleComponentesChart">MuebleComponentesChart</a></li><li><a href="global.html#PaginaError">PaginaError</a></li><li><a href="global.html#apiUrl">apiUrl</a></li><li><a href="global.html#appTitle">appTitle</a></li><li><a href="global.html#router">router</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Wed Feb 26 2025 17:42:52 GMT+0100 (hora estándar de Europa central)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

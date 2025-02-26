@@ -16,6 +16,10 @@ import { apiUrl } from "../config";
 // Registrar el idioma español
 registerLocale("es", es);
 
+/**
+ * Componente para modificar un componente existente.
+ * @returns {JSX.Element} El componente de modificación de componente.
+ */
 function ModificarComponente() {
   const params = useParams();
 
@@ -51,6 +55,10 @@ function ModificarComponente() {
     getComponenteById();
   }, [params.id_componente, datos.id_componente, navigate]);
 
+  /**
+   * Maneja el envío del formulario.
+   * @param {Event} e - El evento de envío del formulario.
+   */
   const handleSubmit = async (e) => {
     // No hacemos submit
     e.preventDefault();
@@ -81,6 +89,10 @@ function ModificarComponente() {
     }
   };
 
+  /**
+   * Maneja el cambio de los campos del formulario.
+   * @param {Event} e - El evento de cambio del campo.
+   */
   const handleChange = (e) => {
     setDatos({
       ...datos,
@@ -88,6 +100,10 @@ function ModificarComponente() {
     });
   };
 
+  /**
+   * Maneja el cambio de la fecha de importación.
+   * @param {Date} date - La nueva fecha de importación.
+   */
   const handleDateChange = (date) => {
     setDatos({
       ...datos,
@@ -95,6 +111,10 @@ function ModificarComponente() {
     });
   };
 
+  /**
+   * Maneja el cambio del estado del switch.
+   * @param {Event} e - El evento de cambio del switch.
+   */
   const handleSwitchChange = (e) => {
     const { name, type, checked, value } = e.target;
 
@@ -104,10 +124,16 @@ function ModificarComponente() {
     }));
   };
 
+  /**
+   * Abre el diálogo de estado.
+   */
   const handleClickOpen = () => {
     setOpen(true);
   };
 
+  /**
+   * Cierra el diálogo de estado y navega a la página anterior.
+   */
   const handleClose = () => {
     setOpen(false);
     navigate(-1);

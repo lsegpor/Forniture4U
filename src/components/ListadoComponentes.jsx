@@ -17,22 +17,64 @@ import DialogTitle from "@mui/material/DialogTitle";
 import { useNavigate } from "react-router";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
+import {
+  Document,
+  Page,
+  Text,
+  StyleSheet,
+  PDFDownloadLink,
+} from "@react-pdf/renderer";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 import { apiUrl } from "../config";
 
+/**
+ * Componente que muestra una lista de todos los componentes.
+ * @component
+ */
 function ListadoComponentes() {
   const [rows, setRows] = useState([]);
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState("");
   const Navigate = useNavigate();
 
+  const styles = StyleSheet.create({
+    page: {
+      padding: 30,
+      fontFamily: "Helvetica",
+    },
+    title: {
+      fontSize: 18,
+      fontWeight: "bold",
+      textAlign: "center",
+      marginBottom: 20,
+    },
+    text: {
+      fontSize: 14,
+      marginBottom: 10,
+    },
+    subtitle: {
+      fontSize: 16,
+      marginBottom: 10,
+      fontWeight: "bold",
+    },
+  });
+
+  /**
+   * Abre el diálogo de confirmación.
+   */
   const handleClickOpen = () => {
     setOpen(true);
   };
 
+  /**
+   * Cierra el diálogo de confirmación.
+   */
   const handleClose = () => {
     setOpen(false);
   };
 
+  // Obtener componentes al cargar el componente
   useEffect(() => {
     async function getComponentes() {
       let response = await fetch(apiUrl + "/componentes");
@@ -46,6 +88,10 @@ function ListadoComponentes() {
     getComponentes();
   }, []);
 
+  /**
+   * Elimina un componente por su ID.
+   * @param {number} id_componente - ID del componente a eliminar.
+   */
   const handleDelete = async (id_componente) => {
     try {
       const response = await fetch(apiUrl + `/componentes/${id_componente}`, {
@@ -70,6 +116,49 @@ function ListadoComponentes() {
     }
   };
 
+  /**
+   * Imprime la ventana actual.
+   */
+  const printWindow = () => {
+    window.print();
+  };
+
+  /**
+   * Genera un PDF a partir de una imagen de la tabla.
+   */
+  const printToPDFImage = () => {
+    const input = document.getElementById("table-container");
+    html2canvas(input, { scale: 2 }).then((canvas) => {
+      const imgData = canvas.toDataURL("image/png");
+      const doc = new jsPDF();
+      const imgWidth = doc.internal.pageSize.getWidth();
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      doc.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
+      doc.save("listado_componentes_imagen.pdf");
+    });
+  };
+
+  /**
+   * Documento PDF para descargar.
+   * @returns {JSX.Element} El documento PDF.
+   */
+  const MyDocument = () => (
+    <Document>
+      <Page style={styles.page}>
+        <Text style={styles.title}>Listado de Componentes</Text>
+        <Text style={styles.subtitle}>
+          Nombre - Precio - Fecha de importación - ¿Está en stock? - Material
+        </Text>
+        {rows.map((row) => (
+          <Text key={row.id_componente} style={styles.text}>
+            {row.nombre} - {row.precio}€ - {row.fecha_importacion} -{" "}
+            {row.en_stock ? "Sí" : "No"} - {row.material}
+          </Text>
+        ))}
+      </Page>
+    </Document>
+  );
+
   return (
     <>
       <Typography variant="h4" align="center" sx={{ m: 4, color: "#332f2d" }}>
@@ -77,7 +166,7 @@ function ListadoComponentes() {
       </Typography>
 
       <Box sx={{ mx: 10 }}>
-        <TableContainer component={Paper} sx={{ my: 2 }}>
+        <TableContainer component={Paper} sx={{ my: 2 }} id="table-container">
           <Table sx={{ minWidth: 650 }} aria-label="simple table">
             <TableHead sx={{ backgroundColor: "#e2d0c6" }}>
               <TableRow>
@@ -138,6 +227,42 @@ function ListadoComponentes() {
             </TableBody>
           </Table>
         </TableContainer>
+      </Box>
+
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          gap: 2,
+          mt: 3,
+          mb: 4,
+        }}
+      >
+        <Button
+          variant="contained"
+          sx={{ backgroundColor: "#da6429" }}
+          onClick={printWindow}
+        >
+          Imprimir desde Navegador
+        </Button>
+
+        <Button
+          variant="contained"
+          sx={{ backgroundColor: "#da6429" }}
+          onClick={printToPDFImage}
+        >
+          Imprimir a PDF (Imagen)
+        </Button>
+
+        <Button variant="contained" sx={{ backgroundColor: "#da6429" }}>
+          <PDFDownloadLink
+            document={<MyDocument />}
+            fileName="listado_componentes.pdf"
+            style={{ textDecoration: "none", color: "white" }}
+          >
+            {({ loading }) => (loading ? "Generando PDF..." : "Descargar PDF")}
+          </PDFDownloadLink>
+        </Button>
       </Box>
 
       <Dialog

@@ -27,6 +27,10 @@ import dayjs from "dayjs";
 // Registrar el idioma español
 registerLocale("es", es);
 
+/**
+ * Componente que muestra una lista de muebles filtrados por fecha de entrega.
+ * @component
+ */
 function ListadoMueblesFecha() {
   const [fechaSeleccionada, setFechaSeleccionada] = useState(null);
   const [muebles, setMuebles] = useState([]);
@@ -34,14 +38,24 @@ function ListadoMueblesFecha() {
   const [message, setMessage] = useState("");
   const Navigate = useNavigate();
 
+  /**
+   * Abre el diálogo de confirmación.
+   */
   const handleClickOpen = () => {
     setOpen(true);
   };
 
+  /**
+   * Cierra el diálogo de confirmación.
+   */
   const handleClose = () => {
     setOpen(false);
   };
 
+  /**
+   * Elimina un mueble por su ID.
+   * @param {number} id_mueble - ID del mueble a eliminar.
+   */
   const handleDelete = async (id_mueble) => {
     try {
       const response = await fetch(apiUrl + `/mueble/${id_mueble}`, {
@@ -59,7 +73,7 @@ function ListadoMueblesFecha() {
       handleClickOpen();
     } catch (error) {
       console.error("Error al realizar la solicitud:", error);
-      setMessage("Error al realizar la solicitud"); // Mensaje de error
+      setMessage("Error al realizar la solicitud");
       handleClickOpen();
     }
   };
@@ -70,6 +84,10 @@ function ListadoMueblesFecha() {
     }
   }, [fechaSeleccionada]);
 
+  /**
+   * Obtiene los muebles filtrados por fecha de entrega.
+   * @param {string} fecha - Fecha de entrega en formato YYYY-MM-DD.
+   */
   const fetchMuebles = async (fecha) => {
     try {
       const response = await fetch(apiUrl + `/mueble/fechaentrega/${fecha}`);
@@ -92,7 +110,7 @@ function ListadoMueblesFecha() {
             value={fechaSeleccionada}
             onChange={(newValue) => setFechaSeleccionada(dayjs(newValue).format("YYYY-MM-DD"))}
             renderInput={(params) => <TextField {...params} fullWidth />}
-            dateFormat="dd/MM/yyyy" // Formato de la fecha
+            dateFormat="dd/MM/yyyy"
             placeholderText="Fecha de entrega:"
             className="border rounded-lg py-2 px-3 w-100"
             calendarClassName="custom-calendar"

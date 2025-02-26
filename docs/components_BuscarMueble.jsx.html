@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: components/BuscarMueble.jsx</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: components/BuscarMueble.jsx</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import Paper from "@mui/material/Paper";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material.Edit";
+import Button from "@mui/material/Button";
+import FormatListBulletedIcon from "@mui/icons-material/FormatListBulleted";
+import Dialog from "@mui/material.Dialog";
+import DialogActions from "@mui/material.DialogActions";
+import DialogContent from "@mui/material.DialogContent";
+import DialogContentText from "@mui/material.DialogContentText";
+import DialogTitle from "@mui.material.DialogTitle";
+import { useNavigate } from "react-router";
+import Typography from "@mui.material/Typography";
+import Box from "@mui.material.Box";
+import { useParams } from "react-router";
+import { useState, useEffect } from "react";
+import { apiUrl } from "../config";
+
+/**
+ * Componente BuscarMueble que permite buscar y gestionar muebles.
+ * @returns {JSX.Element} El componente BuscarMueble.
+ */
+function BuscarMueble() {
+  const { nombre } = useParams();
+  const [muebles, setMuebles] = useState([]);
+  const [open, setOpen] = useState(false);
+  const [message, setMessage] = useState("");
+  const Navigate = useNavigate();
+
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  /**
+   * Maneja la eliminación de un mueble.
+   * @param {number} id_mueble - El ID del mueble a eliminar.
+   */
+  const handleDelete = async (id_mueble) => {
+    try {
+      const response = await fetch(apiUrl + `/mueble/${id_mueble}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        setMuebles((prevRows) =>
+          prevRows.filter((row) => row.id_mueble !== id_mueble)
+        );
+        setMessage(
+          `Mueble con ID ${id_mueble} eliminado correctamente`
+        );
+      } else {
+        setMessage(`Error al eliminar el mueble con ID ${id_mueble}`);
+      }
+      handleClickOpen();
+    } catch (error) {
+      console.error("Error al realizar la solicitud:", error);
+      setMessage("Error al realizar la solicitud"); // Mensaje de error
+      handleClickOpen();
+    }
+  };
+
+  useEffect(() => {
+    const fetchMuebles = async () => {
+      try {
+        const response = await fetch(
+          apiUrl + `/mueble/buscar?nombre=${nombre}`
+        );
+        const data = await response.json();
+
+        if (response.ok) {
+          setMuebles(data); // Actualizar el estado con los resultados de la búsqueda
+        } else {
+          setMuebles([]); // Limpiar los resultados
+        }
+      } catch (error) {
+        console.error("Error al obtener muebles:", error);
+        setMuebles([]); // Limpiar los resultados en caso de error
+      }
+    };
+
+    fetchMuebles();
+  }, [nombre]);
+
+  return (
+    &lt;>
+      &lt;Typography variant="h4" align="center" sx={{ m: 4, color: "#332f2d" }}>
+        Buscar muebles
+      &lt;/Typography>
+
+      &lt;Box sx={{ mx: 10 }}>
+        &lt;TableContainer component={Paper} sx={{ my: 2 }}>
+          &lt;Table sx={{ minWidth: 650 }} aria-label="simple table">
+            &lt;TableHead sx={{ backgroundColor: "#e2d0c6" }}>
+              &lt;TableRow>
+                &lt;TableCell align="center">IDMUEBLE&lt;/TableCell>
+                &lt;TableCell align="center">NOMBRE&lt;/TableCell>
+                &lt;TableCell align="center">PRECIO BASE&lt;/TableCell>
+                &lt;TableCell align="center">FECHA DE ENTREGA&lt;/TableCell>
+                &lt;TableCell align="center">REQUIERE MONTAR&lt;/TableCell>
+                &lt;TableCell align="center">LISTAR COMPONENTES&lt;/TableCell>
+                &lt;TableCell align="center">ELIMINAR&lt;/TableCell>
+                &lt;TableCell align="center">EDITAR&lt;/TableCell>
+              &lt;/TableRow>
+            &lt;/TableHead>
+            &lt;TableBody>
+              {muebles.map((row) => (
+                &lt;TableRow
+                  key={row.id_mueble}
+                  sx={{ "&amp;:last-child td, &amp;:last-child th": { border: 0 } }}
+                >
+                  &lt;TableCell align="center">{row.id_mueble}&lt;/TableCell>
+                  &lt;TableCell align="center">{row.nombre}&lt;/TableCell>
+                  &lt;TableCell align="center">{row.precio_base + "€"}&lt;/TableCell>
+                  &lt;TableCell align="center">{row.fecha_entrega}&lt;/TableCell>
+                  &lt;TableCell align="center">
+                    {row.requiere_montar ? "Sí" : "No"}
+                  &lt;/TableCell>
+                  &lt;TableCell align="center">&lt;FormatListBulletedIcon sx={{ color: "black" }}/>&lt;/TableCell>
+                  &lt;TableCell align="center">
+                    &lt;Button
+                      onClick={() => handleDelete(row.id_mueble)}
+                      style={{
+                        background: "none",
+                        border: "none",
+                        cursor: "pointer",
+                        padding: 0,
+                      }}
+                    >
+                      &lt;DeleteIcon sx={{ color: "black" }} />
+                    &lt;/Button>
+                  &lt;/TableCell>
+                  &lt;TableCell align="center">
+                    &lt;Button
+                      onClick={() =>
+                        Navigate("/modificarmueble/" + row.id_mueble)
+                      }
+                      style={{
+                        background: "none",
+                        border: "none",
+                        cursor: "pointer",
+                        padding: 0,
+                      }}
+                    >
+                      &lt;EditIcon sx={{ color: "black" }} />
+                    &lt;/Button>
+                  &lt;/TableCell>
+                &lt;/TableRow>
+              ))}
+            &lt;/TableBody>
+          &lt;/Table>
+        &lt;/TableContainer>
+      &lt;/Box>
+
+      &lt;Dialog
+        open={open}
+        keepMounted
+        onClose={handleClose}
+        aria-describedby="alert-dialog-slide-description"
+      >
+        &lt;DialogTitle>Estado de eliminación&lt;/DialogTitle>
+        &lt;DialogContent>
+          &lt;DialogContentText id="alert-dialog-slide-description">
+            {message}
+          &lt;/DialogContentText>
+        &lt;/DialogContent>
+        &lt;DialogActions>
+          &lt;Button onClick={handleClose}>Cerrar&lt;/Button>
+        &lt;/DialogActions>
+      &lt;/Dialog>
+    &lt;/>
+  );
+}
+
+export default BuscarMueble;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#AltaComponente">AltaComponente</a></li><li><a href="global.html#AltaMueble">AltaMueble</a></li><li><a href="global.html#BuscarComponente">BuscarComponente</a></li><li><a href="global.html#BuscarMueble">BuscarMueble</a></li><li><a href="global.html#Carrusel">Carrusel</a></li><li><a href="global.html#Footer">Footer</a></li><li><a href="global.html#Home">Home</a></li><li><a href="global.html#ListadoComponentes">ListadoComponentes</a></li><li><a href="global.html#ListadoComponentesMateriales">ListadoComponentesMateriales</a></li><li><a href="global.html#ListadoMuebles">ListadoMuebles</a></li><li><a href="global.html#ListadoMueblesFecha">ListadoMueblesFecha</a></li><li><a href="global.html#Menu">Menu</a></li><li><a href="global.html#ModificarComponente">ModificarComponente</a></li><li><a href="global.html#ModificarMueble">ModificarMueble</a></li><li><a href="global.html#MuebleComponentesChart">MuebleComponentesChart</a></li><li><a href="global.html#PaginaError">PaginaError</a></li><li><a href="global.html#apiUrl">apiUrl</a></li><li><a href="global.html#appTitle">appTitle</a></li><li><a href="global.html#router">router</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Wed Feb 26 2025 17:42:52 GMT+0100 (hora estándar de Europa central)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

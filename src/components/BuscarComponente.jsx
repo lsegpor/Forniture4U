@@ -1,26 +1,30 @@
 import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import Paper from "@mui/material/Paper";
+import TableBody from "@mui/material.TableBody";
+import TableCell from "@mui.material.TableCell";
+import TableContainer from "@mui.material.TableContainer";
+import TableHead from "@mui.material.TableHead";
+import TableRow from "@mui.material.TableRow";
+import Paper from "@mui.material.Paper";
 import { useState } from "react";
-import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
-import Button from "@mui/material/Button";
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogTitle from "@mui/material/DialogTitle";
+import DeleteIcon from "@mui.icons-material/Delete";
+import EditIcon from "@mui.icons-material/Edit";
+import Button from "@mui.material.Button";
+import Dialog from "@mui.material.Dialog";
+import DialogActions from "@mui.material.DialogActions";
+import DialogContent from "@mui.material.DialogContent";
+import DialogContentText from "@mui.material.DialogContentText";
+import DialogTitle from "@mui.material.DialogTitle";
 import { useNavigate } from "react-router";
-import Typography from "@mui/material/Typography";
-import Box from "@mui/material/Box";
-import Grid from "@mui/material/Grid2";
-import TextField from "@mui/material/TextField";
+import Typography from "@mui.material/Typography";
+import Box from "@mui.material.Box";
+import Grid from "@mui.material.Grid2";
+import TextField from "@mui.material.TextField";
 import { apiUrl } from "../config";
 
+/**
+ * Componente BuscarComponente que permite buscar y gestionar componentes.
+ * @returns {JSX.Element} El componente BuscarComponente.
+ */
 function BuscarComponente() {
   const [nombre, setNombre] = useState(""); // Estado para el nombre a buscar
   const [componentes, setComponentes] = useState([]); // Estado para almacenar los resultados de la búsqueda
@@ -36,6 +40,10 @@ function BuscarComponente() {
     setOpen(false);
   };
 
+  /**
+   * Maneja la eliminación de un componente.
+   * @param {number} id_componente - El ID del componente a eliminar.
+   */
   const handleDelete = async (id_componente) => {
     try {
       const response = await fetch(apiUrl + `/componentes/${id_componente}`, {
@@ -60,7 +68,9 @@ function BuscarComponente() {
     }
   };
 
-  // Función para manejar la búsqueda
+  /**
+   * Maneja la búsqueda de componentes por nombre.
+   */
   const handleSearch = async () => {
     try {
       const response = await fetch(

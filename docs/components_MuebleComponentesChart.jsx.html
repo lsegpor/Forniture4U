@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: components/MuebleComponentesChart.jsx</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: components/MuebleComponentesChart.jsx</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import { useEffect, useState, useRef } from "react";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
+  CartesianGrid,
+  ResponsiveContainer,
+} from "recharts";
+import Button from "@mui/material/Button";
+import { jsPDF } from "jspdf";
+import html2canvas from "html2canvas";
+import { apiUrl } from "../config";
+
+/**
+ * Componente que muestra una gráfica de barras con la cantidad de componentes por mueble.
+ * @returns {JSX.Element} El componente de la gráfica de muebles y componentes.
+ */
+function MuebleComponentesChart() {
+  const [muebleIds, setMuebleIds] = useState([]);
+  const [datos, setDatos] = useState([]);
+  const chartRef = useRef(null);
+
+  useEffect(() => {
+    async function getMuebleIds() {
+      let response = await fetch(apiUrl + "/mueble");
+
+      if (response.ok) {
+        let data = await response.json();
+        const ids = data.datos.map((mueble) => mueble.id_mueble); // Extrae solo los IDs
+        setMuebleIds(ids);
+      }
+    }
+
+    getMuebleIds();
+  }, []);
+
+  useEffect(() => {
+    async function getMueblesById() {
+      const mueblesData = await Promise.all(
+        muebleIds.map(async (id) => {
+          let response = await fetch(`${apiUrl}/mueble/${id}`);
+          if (response.ok) {
+            let data = await response.json();
+            const cantidadTotal = data.datos.id_componente_componentes.reduce(
+              (acc, comp) => acc + comp.muebleComponentes.cantidad,
+              0
+            );
+            return {
+              nombre: data.datos.nombre,
+              cantidadComponentes: cantidadTotal,
+            };
+          }
+          return null;
+        })
+      );
+      setDatos(mueblesData.filter((mueble) => mueble !== null));
+    }
+    if (muebleIds.length > 0) {
+      getMueblesById();
+    }
+  }, [muebleIds]);
+
+  /**
+   * Exporta la gráfica a un archivo PDF.
+   */
+  const exportarPDF = async () => {
+    if (!chartRef.current) return;
+
+    const canvas = await html2canvas(chartRef.current);
+    const imgData = canvas.toDataURL("image/png");
+
+    const pdf = new jsPDF("p", "mm", "a4");
+    const imgWidth = 180;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+    pdf.text("Gráfica de Muebles y Componentes", 15, 20);
+    pdf.addImage(imgData, "PNG", 15, 30, imgWidth, imgHeight);
+    pdf.save("grafica_muebles.pdf");
+  };
+
+  return (
+    &lt;div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
+        height: "600px",
+      }}
+    >
+      &lt;div
+        ref={chartRef}
+        style={{
+          backgroundColor: "#fff",
+          padding: "20px",
+          width: "100%",
+          maxWidth: "1200px",
+          height: "500px",
+          display: "flex",
+          justifyContent: "center",
+        }}
+      >
+        &lt;ResponsiveContainer width="100%" height="100%">
+          &lt;BarChart
+            data={datos}
+            margin={{ top: 50, right: 30, left: 20, bottom: 10 }}
+          >
+            &lt;CartesianGrid strokeDasharray="3 3" />
+            &lt;XAxis dataKey="nombre" />
+            &lt;YAxis />
+            &lt;Tooltip />
+            &lt;Legend />
+            &lt;Bar
+              dataKey="cantidadComponentes"
+              fill="#da6429"
+              name="Cantidad de Componentes"
+            />
+          &lt;/BarChart>
+        &lt;/ResponsiveContainer>
+      &lt;/div>
+      &lt;Button
+        variant="contained"
+        sx={{ backgroundColor: "#da6429" }}
+        onClick={exportarPDF}
+      >
+        Impresión a PDF
+      &lt;/Button>
+    &lt;/div>
+  );
+}
+
+export default MuebleComponentesChart;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#AltaComponente">AltaComponente</a></li><li><a href="global.html#AltaMueble">AltaMueble</a></li><li><a href="global.html#BuscarComponente">BuscarComponente</a></li><li><a href="global.html#BuscarMueble">BuscarMueble</a></li><li><a href="global.html#Carrusel">Carrusel</a></li><li><a href="global.html#Footer">Footer</a></li><li><a href="global.html#Home">Home</a></li><li><a href="global.html#ListadoComponentes">ListadoComponentes</a></li><li><a href="global.html#ListadoComponentesMateriales">ListadoComponentesMateriales</a></li><li><a href="global.html#ListadoMuebles">ListadoMuebles</a></li><li><a href="global.html#ListadoMueblesFecha">ListadoMueblesFecha</a></li><li><a href="global.html#Menu">Menu</a></li><li><a href="global.html#ModificarComponente">ModificarComponente</a></li><li><a href="global.html#ModificarMueble">ModificarMueble</a></li><li><a href="global.html#MuebleComponentesChart">MuebleComponentesChart</a></li><li><a href="global.html#PaginaError">PaginaError</a></li><li><a href="global.html#apiUrl">apiUrl</a></li><li><a href="global.html#appTitle">appTitle</a></li><li><a href="global.html#router">router</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Wed Feb 26 2025 17:42:52 GMT+0100 (hora estándar de Europa central)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

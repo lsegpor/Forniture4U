@@ -8,6 +8,10 @@ import foto1 from "../assets/ikea1.jpeg";
 import foto2 from "../assets/ikea2.jpeg";
 import foto3 from "../assets/ikea3.jpeg";
 
+/**
+ * Componente Carrusel que muestra un carrusel de imágenes con descripciones.
+ * @returns {JSX.Element} El componente Carrusel.
+ */
 function Carrusel() {
   return (
     <>
@@ -65,11 +69,12 @@ function Carrusel() {
   );
 }
 
+// Estilo para las leyendas del carrusel
 const captionStyle = {
-    backgroundColor: "rgba(0, 0, 0, 0.5)", // Fondo semitransparente
-    color: "white", // Texto blanco
-    padding: "15px",
-    borderRadius: "5px",
-  };
+  backgroundColor: "rgba(0, 0, 0, 0.5)", // Fondo semitransparente
+  color: "white", // Texto blanco
+  padding: "15px",
+  borderRadius: "5px",
+};
 
 export default Carrusel;

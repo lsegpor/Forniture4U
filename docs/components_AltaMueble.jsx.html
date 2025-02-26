@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: components/AltaMueble.jsx</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: components/AltaMueble.jsx</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import { Box, TextField, Button, Typography, Stack } from "@mui/material";
+import { useState, useEffect } from "react";
+import Grid from "@mui/material/Grid2";
+import { useNavigate } from "react-router";
+import DatePicker, { registerLocale } from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { es } from "date-fns/locale";
+import { MDBSwitch } from "mdb-react-ui-kit";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogContentText from "@mui/material/DialogContentText";
+import DialogTitle from "@mui/material/DialogTitle";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import InputLabel from "@mui/material/InputLabel";
+import MenuItem from "@mui/material/MenuItem";
+import FormControl from "@mui/material/FormControl";
+import Select from "@mui/material/Select";
+import Paper from "@mui/material/Paper";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { apiUrl } from "../config";
+
+// Registrar el idioma español
+registerLocale("es", es);
+
+/**
+ * Componente para dar de alta un mueble.
+ * @returns {JSX.Element} El componente de alta de mueble.
+ */
+function AltaMueble() {
+  const [datos, setDatos] = useState({
+    nombre: "",
+    precio_base: "",
+    fecha_entrega: "",
+    requiere_montar: false,
+  });
+  const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
+  const [message, setMessage] = useState("");
+
+  const [componentes, setComponentes] = useState([]);
+  const [componentesSeleccionados, setComponentesSeleccionados] = useState([]);
+  const [componenteSel, setComponenteSel] = useState(null);
+
+  /**
+   * Abre el diálogo de estado.
+   */
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+
+  /**
+   * Cierra el diálogo de estado y navega a la página principal.
+   */
+  const handleClose = () => {
+    setOpen(false);
+    navigate("/");
+  };
+
+  /**
+   * Maneja el envío del formulario.
+   * @param {Event} e - El evento de envío del formulario.
+   */
+  const handleSubmit = async (e) => {
+    // No hacemos submit
+    e.preventDefault();
+
+    const componentesConCantidad = componentesSeleccionados.map(
+      (componente) => ({
+        ...componente, // Copiamos el objeto existente
+        cantidad: componente.cantidad || 1, // Si no tiene cantidad, la ponemos en 1
+      })
+    );
+
+    try {
+      const response = await fetch(apiUrl + "/mueble", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          mueble: datos,
+          componentes: componentesConCantidad,
+        }),
+      });
+
+      if (response.ok) {
+        setMessage(`Mueble creado correctamente`);
+      } else {
+        setMessage(`Error al crear el mueble`);
+      }
+      handleClickOpen();
+    } catch (error) {
+      console.log("Error", error);
+      setMessage("Error al realizar la solicitud");
+      handleClickOpen();
+    }
+  };
+
+  /**
+   * Maneja el cambio de los campos del formulario.
+   * @param {Event} e - El evento de cambio del campo.
+   */
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+
+    // Para el Switch, actualizamos con el valor booleano
+    if (type === "checkbox") {
+      setDatos({
+        ...datos,
+        [name]: checked, // El estado en_stock será un booleano
+      });
+    } else {
+      setDatos({
+        ...datos,
+        [name]: value, // Para los demás campos, solo actualizamos el valor
+      });
+    }
+  };
+
+  /**
+   * Maneja el cambio de la fecha de entrega.
+   * @param {Date} date - La nueva fecha de entrega.
+   */
+  const handleDateChange = (date) => {
+    setDatos({
+      ...datos,
+      fecha_entrega: date ? date.toISOString().split("T")[0] : "", // Guardamos en formato yyyy-MM-dd
+    });
+  };
+
+  /**
+   * Maneja el cambio del componente seleccionado.
+   * @param {Event} event - El evento de cambio del componente.
+   */
+  const handleChangeSel = (event) => {
+    setComponenteSel(event.target.value);
+  };
+
+  useEffect(() => {
+    async function getComponentes() {
+      let response = await fetch("http://localhost:3000/api/componentes");
+
+      if (response.ok) {
+        let data = await response.json();
+        setComponentes(data.datos);
+      }
+    }
+
+    getComponentes();
+  }, []);
+
+  /**
+   * Agrega un componente a la lista de componentes seleccionados.
+   */
+  const agregarComponente = () => {
+    // Buscar el componente por su id_componente en lugar de por índice
+    const componente = componentes.find(
+      (c) => c.id_componente === componenteSel
+    );
+
+    if (!componente) return; // Si no encuentra el componente, salir
+
+    // Verificar si el componente ya está en la lista de componentes seleccionados
+    setComponentesSeleccionados((prevComponentes) => {
+      const index = prevComponentes.findIndex(
+        (item) => item.id_componente === componente.id_componente
+      );
+
+      if (index !== -1) {
+        // Si el componente ya existe, incrementamos la cantidad
+        const updatedComponentes = [...prevComponentes];
+        updatedComponentes[index] = {
+          ...updatedComponentes[index],
+          cantidad: updatedComponentes[index].cantidad + 1,
+        };
+        return updatedComponentes;
+      } else {
+        // Si no existe, lo agregamos con cantidad 1
+        return [...prevComponentes, { ...componente, cantidad: 1 }];
+      }
+    });
+  };
+
+  /**
+   * Elimina un componente de la lista de componentes seleccionados.
+   * @param {number} id_componente - El ID del componente a eliminar.
+   */
+  function handleDelete(id_componente) {
+    setComponentesSeleccionados(
+      (prevComponentes) =>
+        prevComponentes
+          .map((componente) => {
+            if (componente.id_componente === id_componente) {
+              if (componente.cantidad > 1) {
+                // Si la cantidad es mayor a 1, la reducimos
+                return { ...componente, cantidad: componente.cantidad - 1 };
+              }
+              return null; // Si la cantidad es 1, lo eliminamos
+            }
+            return componente;
+          })
+          .filter(Boolean) // Filtra los `null`, eliminando los componentes con cantidad 0
+    );
+  }
+
+  return (
+    &lt;>
+      &lt;Typography variant="h4" align="center" sx={{ my: 3, color: "#332f2d" }}>
+        Alta de mueble
+      &lt;/Typography>
+      &lt;Grid
+        container
+        spacing={2}
+        sx={{ alignItems: "center", justifyContent: "center", mb: 4 }}
+      >
+        &lt;Grid size={{ lg: 4 }}>
+          &lt;Stack
+            component="form"
+            spacing={2}
+            onSubmit={handleSubmit}
+            sx={{ mx: 2 }}
+          >
+            &lt;TextField
+              id="nombre"
+              label="Nombre"
+              name="nombre"
+              type="text"
+              value={datos.nombre}
+              onChange={handleChange}
+              sx={{ mt: 2 }}
+            />
+            &lt;TextField
+              id="precio"
+              label="Precio base"
+              name="precio_base"
+              type="number"
+              value={datos.precio_base}
+              onChange={handleChange}
+              sx={{ mt: 2 }}
+            />
+            &lt;DatePicker
+              selected={
+                datos.fecha_entrega ? new Date(datos.fecha_entrega) : null
+              }
+              onChange={handleDateChange}
+              dateFormat="dd/MM/yyyy" // Formato de la fecha
+              placeholderText="Fecha de entrega:"
+              className="border rounded-lg py-2 px-3 w-100"
+              calendarClassName="custom-calendar"
+              dayClassName={(date) =>
+                datos.fecha_entrega === date.toISOString().split("T")[0]
+                  ? "selected-day"
+                  : "day"
+              }
+              locale="es"
+            />
+            &lt;style>{`
+              .selected-day {
+                background-color: #da6429 !important;
+                color: white !important;
+              }
+              .day:hover {
+                background-color: #f0814f !important;
+                color: white !important;
+              }
+            `}&lt;/style>
+            &lt;MDBSwitch
+              id="flexSwitchCheckDefault"
+              label="¿El mueble requiere de montaje?"
+              name="requiere_montar"
+              onChange={(e) => handleChange(e)} // Actualiza el estado de en_stock
+              checked={
+                datos.requiere_montar === "true" ||
+                datos.requiere_montar === true
+              } // Para que sea un booleano
+            />
+            &lt;Box sx={{ maxWidth: 500 }}>
+              &lt;FormControl fullWidth>
+                &lt;InputLabel id="lblComponentes">Componentes&lt;/InputLabel>
+                &lt;Select
+                  labelId="lblComponentes"
+                  id="lstComponentes"
+                  value={componenteSel}
+                  label="Componente a seleccionar"
+                  onChange={handleChangeSel}
+                >
+                  {componentes.map((componente) => (
+                    &lt;MenuItem
+                      key={componente.id_componente}
+                      value={componente.id_componente}
+                    >
+                      {componente.nombre}
+                    &lt;/MenuItem>
+                  ))}
+                &lt;/Select>
+              &lt;/FormControl>
+              &lt;Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
+                &lt;Button
+                  variant="contained"
+                  sx={{ backgroundColor: "#da6429" }}
+                  onClick={() => agregarComponente()}
+                >
+                  Agregar componente
+                &lt;/Button>
+              &lt;/Box>
+              &lt;TableContainer component={Paper} sx={{ mt: 2 }}>
+                &lt;Table aria-label="simple table">
+                  &lt;TableHead sx={{ backgroundColor: "#e2d0c6" }}>
+                    &lt;TableRow>
+                      &lt;TableCell align="center">NOMBRE&lt;/TableCell>
+                      &lt;TableCell align="center">PRECIO&lt;/TableCell>
+                      &lt;TableCell align="center">CANTIDAD&lt;/TableCell>
+                      &lt;TableCell align="center">ELIMINAR&lt;/TableCell>
+                    &lt;/TableRow>
+                  &lt;/TableHead>
+                  &lt;TableBody>
+                    {componentesSeleccionados.map((row) => (
+                      &lt;TableRow
+                        key={row.id_componente}
+                        sx={{
+                          "&amp;:last-child td, &amp;:last-child th": { border: 0 },
+                        }}
+                      >
+                        &lt;TableCell align="center">{row.nombre}&lt;/TableCell>
+
+                        &lt;TableCell align="center">
+                          {row.precio + " €"}
+                        &lt;/TableCell>
+                        &lt;TableCell align="center">{row.cantidad}&lt;/TableCell>
+                        &lt;TableCell align="center">
+                          &lt;Button
+                            onClick={() => handleDelete(row.id_componente)}
+                            style={{
+                              background: "none",
+                              border: "none",
+                              cursor: "pointer",
+                              padding: 0,
+                            }}
+                          >
+                            &lt;DeleteIcon sx={{ color: "black" }} />
+                          &lt;/Button>
+                        &lt;/TableCell>
+                      &lt;/TableRow>
+                    ))}
+                  &lt;/TableBody>
+                &lt;/Table>
+              &lt;/TableContainer>
+            &lt;/Box>
+            &lt;Box sx={{ display: "flex", justifyContent: "center" }}>
+              &lt;Button
+                variant="contained"
+                sx={{ mt: 2, backgroundColor: "#da6429" }}
+                type="submit"
+              >
+                Aceptar
+              &lt;/Button>
+            &lt;/Box>
+          &lt;/Stack>
+        &lt;/Grid>
+      &lt;/Grid>
+      &lt;Dialog
+        open={open}
+        keepMounted
+        onClose={handleClose}
+        aria-describedby="alert-dialog-slide-description"
+      >
+        &lt;DialogTitle>Estado de alta&lt;/DialogTitle>
+        &lt;DialogContent>
+          &lt;DialogContentText id="alert-dialog-slide-description">
+            {message}
+          &lt;/DialogContentText>
+        &lt;/DialogContent>
+        &lt;DialogActions>
+          &lt;Button onClick={handleClose}>Cerrar&lt;/Button>
+        &lt;/DialogActions>
+      &lt;/Dialog>
+    &lt;/>
+  );
+}
+
+export default AltaMueble;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#AltaComponente">AltaComponente</a></li><li><a href="global.html#AltaMueble">AltaMueble</a></li><li><a href="global.html#BuscarComponente">BuscarComponente</a></li><li><a href="global.html#BuscarMueble">BuscarMueble</a></li><li><a href="global.html#Carrusel">Carrusel</a></li><li><a href="global.html#Footer">Footer</a></li><li><a href="global.html#Home">Home</a></li><li><a href="global.html#ListadoComponentes">ListadoComponentes</a></li><li><a href="global.html#ListadoComponentesMateriales">ListadoComponentesMateriales</a></li><li><a href="global.html#ListadoMuebles">ListadoMuebles</a></li><li><a href="global.html#ListadoMueblesFecha">ListadoMueblesFecha</a></li><li><a href="global.html#Menu">Menu</a></li><li><a href="global.html#ModificarComponente">ModificarComponente</a></li><li><a href="global.html#ModificarMueble">ModificarMueble</a></li><li><a href="global.html#MuebleComponentesChart">MuebleComponentesChart</a></li><li><a href="global.html#PaginaError">PaginaError</a></li><li><a href="global.html#apiUrl">apiUrl</a></li><li><a href="global.html#appTitle">appTitle</a></li><li><a href="global.html#router">router</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Wed Feb 26 2025 17:42:52 GMT+0100 (hora estándar de Europa central)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

@@ -1,21 +1,25 @@
 import { Box, TextField, Button, Typography, Stack } from "@mui/material";
 import { useState } from "react";
-import Grid from "@mui/material/Grid2";
+import Grid from "@mui/material.Grid2";
 import { useNavigate } from "react-router";
 import DatePicker, { registerLocale } from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { es } from "date-fns/locale";
 import { MDBSwitch } from "mdb-react-ui-kit";
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogTitle from "@mui/material/DialogTitle";
+import Dialog from "@mui.material.Dialog";
+import DialogActions from "@mui.material.DialogActions";
+import DialogContent from "@mui.material.DialogContent";
+import DialogContentText from "@mui.material.DialogContentText";
+import DialogTitle from "@mui.material.DialogTitle";
 import { apiUrl } from '../config';
 
 // Registrar el idioma español
 registerLocale("es", es);
 
+/**
+ * Componente para dar de alta un componente.
+ * @returns {JSX.Element} El componente de alta de componente.
+ */
 function AltaComponente() {
   const [datos, setDatos] = useState({
     nombre: "",
@@ -38,6 +42,10 @@ function AltaComponente() {
     navigate("/");
   };
 
+  /**
+   * Maneja el envío del formulario.
+   * @param {Event} e - El evento de envío del formulario.
+   */
   const handleSubmit = async (e) => {
     // No hacemos submit
     e.preventDefault();
@@ -64,6 +72,10 @@ function AltaComponente() {
     }
   };
 
+  /**
+   * Maneja el cambio en los campos del formulario.
+   * @param {Event} e - El evento de cambio.
+   */
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
 
@@ -81,6 +93,10 @@ function AltaComponente() {
     }
   };
 
+  /**
+   * Maneja el cambio en el campo de fecha.
+   * @param {Date} date - La nueva fecha seleccionada.
+   */
   const handleDateChange = (date) => {
     setDatos({
       ...datos,

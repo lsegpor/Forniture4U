@@ -13,17 +13,25 @@ import {
   MDBCollapse,
   MDBInputGroup,
   MDBBtn,
+  MDBNavbarLink,
 } from "mdb-react-ui-kit";
 import { useState } from "react";
 import logo from "../assets/logo.jpg";
 import { Link } from "react-router";
 import { useNavigate } from "react-router";
 
+/**
+ * Componente del menú de navegación.
+ * @returns {JSX.Element} El componente del menú de navegación.
+ */
 function Menu() {
   const [openBasic, setOpenBasic] = useState(false);
   const [nombreMueble, setNombreMueble] = useState("");
   const navigate = useNavigate();
 
+  /**
+   * Maneja la búsqueda de un mueble por nombre.
+   */
   const handleSearch = () => {
     if (nombreMueble.trim() !== "") {
       navigate(`/buscarmueble/${nombreMueble}`);
@@ -79,7 +87,9 @@ function Menu() {
                     <MDBDropdownItem link>Listado de muebles</MDBDropdownItem>
                   </Link>
                   <Link to="/listadomueblesfecha" style={{ color: "#4f4f4f" }}>
-                    <MDBDropdownItem link>Listado de muebles por fecha</MDBDropdownItem>
+                    <MDBDropdownItem link>
+                      Listado de muebles por fecha
+                    </MDBDropdownItem>
                   </Link>
                 </MDBDropdownMenu>
               </MDBDropdown>
@@ -116,6 +126,11 @@ function Menu() {
                   </Link>
                 </MDBDropdownMenu>
               </MDBDropdown>
+            </MDBNavbarItem>
+            <MDBNavbarItem>
+              <MDBNavbarLink active aria-current="page" href="/grafica" style={{ fontSize: "1.2rem", color: "#4f4f4f" }}>
+                Gráfica
+              </MDBNavbarLink>
             </MDBNavbarItem>
           </MDBNavbarNav>
         </MDBCollapse>

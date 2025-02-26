@@ -23,6 +23,10 @@ import InputLabel from "@mui/material/InputLabel";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 
+/**
+ * Componente que muestra una lista de componentes filtrados por material.
+ * @component
+ */
 function ListadoComponentesMateriales() {
   const [materiales, setMateriales] = useState([]);
   const [materialSeleccionado, setMaterialSeleccionado] = useState("");
@@ -31,37 +35,47 @@ function ListadoComponentesMateriales() {
   const [message, setMessage] = useState("");
   const Navigate = useNavigate();
 
+  /**
+   * Abre el diálogo de confirmación.
+   */
   const handleClickOpen = () => {
     setOpen(true);
   };
 
+  /**
+   * Cierra el diálogo de confirmación.
+   */
   const handleClose = () => {
     setOpen(false);
   };
 
+  /**
+   * Elimina un componente por su ID.
+   * @param {number} id_componente - ID del componente a eliminar.
+   */
   const handleDelete = async (id_componente) => {
-      try {
-        const response = await fetch(apiUrl + `/componentes/${id_componente}`, {
-          method: "DELETE",
-        });
-  
-        if (response.ok) {
-          setComponentes((prevRows) =>
-            prevRows.filter((row) => row.id_componente !== id_componente)
-          );
-          setMessage(
-            `Componente con ID ${id_componente} eliminado correctamente`
-          );
-        } else {
-          setMessage(`Error al eliminar el componente con ID ${id_componente}`);
-        }
-        handleClickOpen();
-      } catch (error) {
-        console.error("Error al realizar la solicitud:", error);
-        setMessage("Error al realizar la solicitud"); // Mensaje de error
-        handleClickOpen();
+    try {
+      const response = await fetch(apiUrl + `/componentes/${id_componente}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        setComponentes((prevRows) =>
+          prevRows.filter((row) => row.id_componente !== id_componente)
+        );
+        setMessage(
+          `Componente con ID ${id_componente} eliminado correctamente`
+        );
+      } else {
+        setMessage(`Error al eliminar el componente con ID ${id_componente}`);
       }
-    };
+      handleClickOpen();
+    } catch (error) {
+      console.error("Error al realizar la solicitud:", error);
+      setMessage("Error al realizar la solicitud"); // Mensaje de error
+      handleClickOpen();
+    }
+  };
 
   // Obtener materiales únicos al cargar el componente
   useEffect(() => {
@@ -78,7 +92,10 @@ function ListadoComponentesMateriales() {
     fetchMateriales();
   }, []);
 
-  // Obtener los componentes al seleccionar un material
+  /**
+   * Maneja el cambio del material seleccionado.
+   * @param {Event} event - El evento de cambio del material.
+   */
   const handleMaterialChange = async (event) => {
     const material = event.target.value;
     setMaterialSeleccionado(material);

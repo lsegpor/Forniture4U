@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: main.jsx</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: main.jsx</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import { createBrowserRouter, RouterProvider } from "react-router";
+import Home from "./pages/Home";
+import PaginaError from "./pages/PaginaError";
+import AltaComponente from "./components/AltaComponente";
+import ListadoComponentes from "./components/ListadoComponentes";
+import ModificarComponente from "./components/ModificarComponente";
+import AltaMueble from "./components/AltaMueble";
+import ListadoMuebles from "./components/ListadoMuebles";
+import ModificarMueble from "./components/ModificarMueble";
+import ListadoComponentesMateriales from "./components/ListadoComponentesMateriales";
+import BuscarComponente from "./components/BuscarComponente";
+import BuscarMueble from "./components/BuscarMueble";
+import ListadoMueblesFecha from "./components/ListadoMueblesFecha";
+import MuebleComponentesChart from "./components/MuebleComponentesChart";
+
+import "@fontsource/roboto/300.css";
+import "@fontsource/roboto/400.css";
+import "@fontsource/roboto/500.css";
+import "@fontsource/roboto/700.css";
+import "mdb-react-ui-kit/dist/css/mdb.min.css";
+import "@fortawesome/fontawesome-free/css/all.min.css";
+
+/**
+ * @typedef {Object} RouteObject
+ * @property {string} path - Ruta de la página.
+ * @property {JSX.Element} element - Componente asociado a la ruta.
+ * @property {JSX.Element} [errorElement] - Componente de error.
+ * @property {RouteObject[]} [children] - Rutas anidadas.
+ */
+
+/**
+ * Configuración de las rutas de la aplicación.
+ * @type {RouteObject[]}
+ */
+let router = createBrowserRouter([
+  {
+    path: "/",
+    element: &lt;Home />,
+    errorElement: &lt;PaginaError />,
+    children: [
+      {
+        path: "altacomponente",
+        element: &lt;AltaComponente />,
+      },
+      {
+        path: "listadocomponentes",
+        element: &lt;ListadoComponentes />,
+      },
+      {
+        path: "modificarcomponente/:id_componente",
+        element: &lt;ModificarComponente />,
+      },
+      {
+        path: "altamueble",
+        element: &lt;AltaMueble />,
+      },
+      {
+        path: "listadomuebles",
+        element: &lt;ListadoMuebles />,
+      },
+      {
+        path: "modificarmueble/:id_mueble",
+        element: &lt;ModificarMueble />,
+      },
+      {
+        path: "listadocomponentesmateriales",
+        element: &lt;ListadoComponentesMateriales />,
+      },
+      {
+        path: "buscarcomponente",
+        element: &lt;BuscarComponente />,
+      },
+      {
+        path: "buscarmueble/:nombre",
+        element: &lt;BuscarMueble />,
+      },
+      {
+        path: "listadomueblesfecha",
+        element: &lt;ListadoMueblesFecha />,
+      },
+      {
+        path: "grafica",
+        element: &lt;MuebleComponentesChart />,
+      },
+    ],
+  },
+]);
+
+/**
+ * Renderiza la aplicación en el elemento con id "root".
+ */
+createRoot(document.getElementById("root")).render(
+  &lt;StrictMode>
+    &lt;RouterProvider router={router} />
+  &lt;/StrictMode>
+);
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#AltaComponente">AltaComponente</a></li><li><a href="global.html#AltaMueble">AltaMueble</a></li><li><a href="global.html#BuscarComponente">BuscarComponente</a></li><li><a href="global.html#BuscarMueble">BuscarMueble</a></li><li><a href="global.html#Carrusel">Carrusel</a></li><li><a href="global.html#Footer">Footer</a></li><li><a href="global.html#Home">Home</a></li><li><a href="global.html#ListadoComponentes">ListadoComponentes</a></li><li><a href="global.html#ListadoComponentesMateriales">ListadoComponentesMateriales</a></li><li><a href="global.html#ListadoMuebles">ListadoMuebles</a></li><li><a href="global.html#ListadoMueblesFecha">ListadoMueblesFecha</a></li><li><a href="global.html#Menu">Menu</a></li><li><a href="global.html#ModificarComponente">ModificarComponente</a></li><li><a href="global.html#ModificarMueble">ModificarMueble</a></li><li><a href="global.html#MuebleComponentesChart">MuebleComponentesChart</a></li><li><a href="global.html#PaginaError">PaginaError</a></li><li><a href="global.html#apiUrl">apiUrl</a></li><li><a href="global.html#appTitle">appTitle</a></li><li><a href="global.html#router">router</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Wed Feb 26 2025 17:42:52 GMT+0100 (hora estándar de Europa central)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

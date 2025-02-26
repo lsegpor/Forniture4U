@@ -28,6 +28,10 @@ import { apiUrl } from "../config";
 // Registrar el idioma español
 registerLocale("es", es);
 
+/**
+ * Componente para dar de alta un mueble.
+ * @returns {JSX.Element} El componente de alta de mueble.
+ */
 function AltaMueble() {
   const [datos, setDatos] = useState({
     nombre: "",
@@ -43,15 +47,25 @@ function AltaMueble() {
   const [componentesSeleccionados, setComponentesSeleccionados] = useState([]);
   const [componenteSel, setComponenteSel] = useState(null);
 
+  /**
+   * Abre el diálogo de estado.
+   */
   const handleClickOpen = () => {
     setOpen(true);
   };
 
+  /**
+   * Cierra el diálogo de estado y navega a la página principal.
+   */
   const handleClose = () => {
     setOpen(false);
     navigate("/");
   };
 
+  /**
+   * Maneja el envío del formulario.
+   * @param {Event} e - El evento de envío del formulario.
+   */
   const handleSubmit = async (e) => {
     // No hacemos submit
     e.preventDefault();
@@ -88,6 +102,10 @@ function AltaMueble() {
     }
   };
 
+  /**
+   * Maneja el cambio de los campos del formulario.
+   * @param {Event} e - El evento de cambio del campo.
+   */
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
 
@@ -105,6 +123,10 @@ function AltaMueble() {
     }
   };
 
+  /**
+   * Maneja el cambio de la fecha de entrega.
+   * @param {Date} date - La nueva fecha de entrega.
+   */
   const handleDateChange = (date) => {
     setDatos({
       ...datos,
@@ -112,6 +134,10 @@ function AltaMueble() {
     });
   };
 
+  /**
+   * Maneja el cambio del componente seleccionado.
+   * @param {Event} event - El evento de cambio del componente.
+   */
   const handleChangeSel = (event) => {
     setComponenteSel(event.target.value);
   };
@@ -129,6 +155,9 @@ function AltaMueble() {
     getComponentes();
   }, []);
 
+  /**
+   * Agrega un componente a la lista de componentes seleccionados.
+   */
   const agregarComponente = () => {
     // Buscar el componente por su id_componente en lugar de por índice
     const componente = componentes.find(
@@ -158,6 +187,10 @@ function AltaMueble() {
     });
   };
 
+  /**
+   * Elimina un componente de la lista de componentes seleccionados.
+   * @param {number} id_componente - El ID del componente a eliminar.
+   */
   function handleDelete(id_componente) {
     setComponentesSeleccionados(
       (prevComponentes) =>

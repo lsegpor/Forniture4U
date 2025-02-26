@@ -1,5 +1,9 @@
 import { MDBFooter } from "mdb-react-ui-kit";
 
+/**
+ * Componente que muestra el pie de página.
+ * @component
+ */
 function Footer() {
   return (
     <>

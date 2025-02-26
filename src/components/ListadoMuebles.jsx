@@ -20,16 +20,26 @@ import Box from "@mui/material/Box";
 import { apiUrl } from "../config";
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 
+/**
+ * Componente que muestra una lista de todos los muebles.
+ * @component
+ */
 function ListadoMuebles() {
     const [rows, setRows] = useState([]);
     const [open, setOpen] = useState(false);
     const [message, setMessage] = useState("");
     const Navigate = useNavigate();
   
+    /**
+     * Abre el diálogo de confirmación.
+     */
     const handleClickOpen = () => {
       setOpen(true);
     };
   
+    /**
+     * Cierra el diálogo de confirmación.
+     */
     const handleClose = () => {
       setOpen(false);
     };
@@ -47,6 +57,10 @@ function ListadoMuebles() {
       getMuebles();
     }, []);
 
+    /**
+     * Elimina un mueble por su ID.
+     * @param {number} id_mueble - ID del mueble a eliminar.
+     */
     const handleDelete = async (id_mueble) => {
         try {
           const response = await fetch(apiUrl + `/mueble/${id_mueble}`, {
@@ -66,7 +80,7 @@ function ListadoMuebles() {
           handleClickOpen();
         } catch (error) {
           console.error("Error al realizar la solicitud:", error);
-          setMessage("Error al realizar la solicitud"); // Mensaje de error
+          setMessage("Error al realizar la solicitud");
           handleClickOpen();
         }
       };

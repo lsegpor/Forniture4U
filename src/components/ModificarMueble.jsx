@@ -28,6 +28,10 @@ import { apiUrl } from "../config";
 // Registrar el idioma español
 registerLocale("es", es);
 
+/**
+ * Componente para modificar un mueble existente.
+ * @returns {JSX.Element} El componente de modificación de mueble.
+ */
 function ModificarMueble() {
   const params = useParams();
 
@@ -77,6 +81,10 @@ function ModificarMueble() {
     getMuebleById();
   }, [datos.id_mueble, navigate]);
 
+  /**
+   * Maneja el cambio de los campos del formulario.
+   * @param {Event} e - El evento de cambio del campo.
+   */
   const handleChange = (e) => {
     setDatos({
       ...datos,
@@ -84,6 +92,10 @@ function ModificarMueble() {
     });
   };
 
+  /**
+   * Maneja el cambio de la fecha de entrega.
+   * @param {Date} date - La nueva fecha de entrega.
+   */
   const handleDateChange = (date) => {
     setDatos({
       ...datos,
@@ -91,6 +103,10 @@ function ModificarMueble() {
     });
   };
 
+  /**
+   * Maneja el cambio del estado del switch.
+   * @param {Event} e - El evento de cambio del switch.
+   */
   const handleSwitchChange = (e) => {
     const { name, type, checked, value } = e.target;
 
@@ -100,19 +116,32 @@ function ModificarMueble() {
     }));
   };
 
+  /**
+   * Abre el diálogo de estado.
+   */
   const handleClickOpen = () => {
     setOpen(true);
   };
 
+  /**
+   * Cierra el diálogo de estado y navega a la página anterior.
+   */
   const handleClose = () => {
     setOpen(false);
     navigate(-1);
   };
 
+  /**
+   * Maneja el cambio del componente seleccionado.
+   * @param {Event} event - El evento de cambio del componente.
+   */
   const handleChangeSel = (event) => {
     setComponenteSel(event.target.value);
   };
 
+  /**
+   * Agrega un componente a la lista de componentes seleccionados.
+   */
   const agregarComponente = () => {
     // Buscar el componente por su id_componente en lugar de por índice
     const componente = componentes.find(
@@ -153,6 +182,10 @@ function ModificarMueble() {
     });
   };
 
+  /**
+   * Elimina un componente de la lista de componentes seleccionados.
+   * @param {number} id_componente - El ID del componente a eliminar.
+   */
   const handleDelete = (id_componente) => {
     setDatos((prevDatos) => {
       const updatedComponentes = prevDatos.id_componente_componentes
@@ -177,6 +210,10 @@ function ModificarMueble() {
     });
   };
 
+  /**
+   * Maneja el envío del formulario.
+   * @param {Event} e - El evento de envío del formulario.
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
 

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: components/Menu.jsx</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: components/Menu.jsx</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import {
+  MDBContainer,
+  MDBNavbar,
+  MDBNavbarBrand,
+  MDBNavbarToggler,
+  MDBIcon,
+  MDBNavbarNav,
+  MDBNavbarItem,
+  MDBDropdown,
+  MDBDropdownToggle,
+  MDBDropdownMenu,
+  MDBDropdownItem,
+  MDBCollapse,
+  MDBInputGroup,
+  MDBBtn,
+  MDBNavbarLink,
+} from "mdb-react-ui-kit";
+import { useState } from "react";
+import logo from "../assets/logo.jpg";
+import { Link } from "react-router";
+import { useNavigate } from "react-router";
+
+/**
+ * Componente del menú de navegación.
+ * @returns {JSX.Element} El componente del menú de navegación.
+ */
+function Menu() {
+  const [openBasic, setOpenBasic] = useState(false);
+  const [nombreMueble, setNombreMueble] = useState("");
+  const navigate = useNavigate();
+
+  /**
+   * Maneja la búsqueda de un mueble por nombre.
+   */
+  const handleSearch = () => {
+    if (nombreMueble.trim() !== "") {
+      navigate(`/buscarmueble/${nombreMueble}`);
+    }
+  };
+
+  return (
+    &lt;MDBNavbar expand="lg" sticky light style={{ backgroundColor: "#e2d0c6" }}>
+      &lt;MDBContainer fluid>
+        &lt;MDBNavbarBrand href="/" style={{ fontSize: "2rem", color: "#332f2d" }}>
+          &lt;img
+            src={logo}
+            height="80"
+            alt=""
+            loading="lazy"
+            style={{
+              marginLeft: "5px",
+              marginRight: "15px",
+              backgroundColor: "white",
+              borderRadius: "50%",
+              padding: "5px",
+            }}
+          />
+          Forniture4U
+        &lt;/MDBNavbarBrand>
+
+        &lt;MDBNavbarToggler
+          aria-controls="navbarSupportedContent"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+          onClick={() => setOpenBasic(!openBasic)}
+        >
+          &lt;MDBIcon icon="bars" fas />
+        &lt;/MDBNavbarToggler>
+
+        &lt;MDBCollapse navbar open={openBasic}>
+          &lt;MDBNavbarNav className="mr-auto mb-2 mb-lg-0">
+            &lt;MDBNavbarItem>
+              &lt;MDBDropdown>
+                &lt;MDBDropdownToggle
+                  tag="a"
+                  className="nav-link"
+                  role="button"
+                  style={{ fontSize: "1.2rem" }}
+                >
+                  Muebles
+                &lt;/MDBDropdownToggle>
+                &lt;MDBDropdownMenu>
+                  &lt;Link to="/altamueble" style={{ color: "#4f4f4f" }}>
+                    &lt;MDBDropdownItem link>Alta de muebles&lt;/MDBDropdownItem>
+                  &lt;/Link>
+                  &lt;Link to="/listadomuebles" style={{ color: "#4f4f4f" }}>
+                    &lt;MDBDropdownItem link>Listado de muebles&lt;/MDBDropdownItem>
+                  &lt;/Link>
+                  &lt;Link to="/listadomueblesfecha" style={{ color: "#4f4f4f" }}>
+                    &lt;MDBDropdownItem link>
+                      Listado de muebles por fecha
+                    &lt;/MDBDropdownItem>
+                  &lt;/Link>
+                &lt;/MDBDropdownMenu>
+              &lt;/MDBDropdown>
+            &lt;/MDBNavbarItem>
+            &lt;MDBNavbarItem>
+              &lt;MDBDropdown>
+                &lt;MDBDropdownToggle
+                  tag="a"
+                  className="nav-link"
+                  role="button"
+                  style={{ fontSize: "1.2rem" }}
+                >
+                  Componentes
+                &lt;/MDBDropdownToggle>
+                &lt;MDBDropdownMenu>
+                  &lt;Link to="/altacomponente" style={{ color: "#4f4f4f" }}>
+                    &lt;MDBDropdownItem link>Alta de componentes&lt;/MDBDropdownItem>
+                  &lt;/Link>
+                  &lt;Link to="/listadocomponentes" style={{ color: "#4f4f4f" }}>
+                    &lt;MDBDropdownItem link>
+                      Listado de componentes
+                    &lt;/MDBDropdownItem>
+                  &lt;/Link>
+                  &lt;Link
+                    to="/listadocomponentesmateriales"
+                    style={{ color: "#4f4f4f" }}
+                  >
+                    &lt;MDBDropdownItem link>
+                      Listado de componentes por material
+                    &lt;/MDBDropdownItem>
+                  &lt;/Link>
+                  &lt;Link to="/buscarcomponente" style={{ color: "#4f4f4f" }}>
+                    &lt;MDBDropdownItem link>Buscar componentes&lt;/MDBDropdownItem>
+                  &lt;/Link>
+                &lt;/MDBDropdownMenu>
+              &lt;/MDBDropdown>
+            &lt;/MDBNavbarItem>
+            &lt;MDBNavbarItem>
+              &lt;MDBNavbarLink active aria-current="page" href="/grafica" style={{ fontSize: "1.2rem", color: "#4f4f4f" }}>
+                Gráfica
+              &lt;/MDBNavbarLink>
+            &lt;/MDBNavbarItem>
+          &lt;/MDBNavbarNav>
+        &lt;/MDBCollapse>
+        &lt;MDBInputGroup tag="form" className="d-flex w-auto">
+          &lt;input
+            className="form-control"
+            placeholder="Nombre de un mueble"
+            aria-label="Search"
+            type="Search"
+            value={nombreMueble}
+            onChange={(e) => setNombreMueble(e.target.value)}
+          />
+          &lt;MDBBtn style={{ backgroundColor: "#da6429" }} onClick={handleSearch}>
+            Buscar
+          &lt;/MDBBtn>
+        &lt;/MDBInputGroup>
+      &lt;/MDBContainer>
+    &lt;/MDBNavbar>
+  );
+}
+
+export default Menu;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#AltaComponente">AltaComponente</a></li><li><a href="global.html#AltaMueble">AltaMueble</a></li><li><a href="global.html#BuscarComponente">BuscarComponente</a></li><li><a href="global.html#BuscarMueble">BuscarMueble</a></li><li><a href="global.html#Carrusel">Carrusel</a></li><li><a href="global.html#Footer">Footer</a></li><li><a href="global.html#Home">Home</a></li><li><a href="global.html#ListadoComponentes">ListadoComponentes</a></li><li><a href="global.html#ListadoComponentesMateriales">ListadoComponentesMateriales</a></li><li><a href="global.html#ListadoMuebles">ListadoMuebles</a></li><li><a href="global.html#ListadoMueblesFecha">ListadoMueblesFecha</a></li><li><a href="global.html#Menu">Menu</a></li><li><a href="global.html#ModificarComponente">ModificarComponente</a></li><li><a href="global.html#ModificarMueble">ModificarMueble</a></li><li><a href="global.html#MuebleComponentesChart">MuebleComponentesChart</a></li><li><a href="global.html#PaginaError">PaginaError</a></li><li><a href="global.html#apiUrl">apiUrl</a></li><li><a href="global.html#appTitle">appTitle</a></li><li><a href="global.html#router">router</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Wed Feb 26 2025 17:42:52 GMT+0100 (hora estándar de Europa central)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
