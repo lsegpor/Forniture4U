@@ -4,6 +4,7 @@ import Footer from "../components/Footer";
 import { MDBContainer } from "mdb-react-ui-kit";
 import Carrusel from "../components/Carrusel";
 import { useLocation } from "react-router";
+import { AuthListener } from "../hooks/useAuthListener";
 
 /**
  * Componente principal de la página de inicio.
@@ -14,6 +15,8 @@ function Home() {
 
   return (
     <>
+      <AuthListener />
+
       <MDBContainer fluid className="d-flex flex-column min-vh-100 p-0">
         <Menu />
         {location.pathname === "/" && <Carrusel />}

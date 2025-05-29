@@ -1,6 +1,5 @@
-import { Box, TextField, Button, Typography, Stack } from "@mui/material";
+import { Box, TextField, Button, Typography, Container } from "@mui/material";
 import { useState, useEffect } from "react";
-import Grid from "@mui/material/Grid2";
 import { useNavigate } from "react-router";
 import DatePicker, { registerLocale } from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -24,9 +23,26 @@ import Select from "@mui/material/Select";
 import Paper from "@mui/material/Paper";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { apiUrl } from "../config";
+import useUserStore from "../stores/useUserStore";
+import { Navigate } from "react-router-dom";
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import { styled } from '@mui/material/styles';
+import axios from 'axios';
 
 // Registrar el idioma español
 registerLocale("es", es);
+
+const VisuallyHiddenInput = styled('input')({
+  clip: 'rect(0 0 0 0)',
+  clipPath: 'inset(50%)',
+  height: 1,
+  overflow: 'hidden',
+  position: 'absolute',
+  bottom: 0,
+  left: 0,
+  whiteSpace: 'nowrap',
+  width: 1,
+});
 
 /**
  * Componente para dar de alta un mueble.
@@ -38,7 +54,9 @@ function AltaMueble() {
     precio_base: "",
     fecha_entrega: "",
     requiere_montar: false,
+    descripcion: ""
   });
+
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState("");
@@ -46,6 +64,13 @@ function AltaMueble() {
   const [componentes, setComponentes] = useState([]);
   const [componentesSeleccionados, setComponentesSeleccionados] = useState([]);
   const [componenteSel, setComponenteSel] = useState(null);
+
+  const [redirect, setRedirect] = useState(false);
+  const [imagen, setImagen] = useState(null);
+  const [imagenPreview, setImagenPreview] = useState('');
+
+  const user = useUserStore((state) => state.user);
+  const isEmpresa = useUserStore((state) => state.isEmpresa);
 
   /**
    * Abre el diálogo de estado.
@@ -70,29 +95,62 @@ function AltaMueble() {
     // No hacemos submit
     e.preventDefault();
 
-    const componentesConCantidad = componentesSeleccionados.map(
-      (componente) => ({
-        ...componente, // Copiamos el objeto existente
-        cantidad: componente.cantidad || 1, // Si no tiene cantidad, la ponemos en 1
-      })
-    );
-
     try {
-      const response = await fetch(apiUrl + "/mueble", {
-        method: "POST",
+      if (!datos.nombre || !datos.precio_base || !datos.fecha_entrega || !datos.id_empresa) {
+        setMessage("Por favor, complete todos los campos obligatorios");
+        handleClickOpen();
+        return;
+      }
+
+      // Verificar que el usuario sea una empresa y tenga ID
+      if (!isEmpresa || !user || !user.id_empresa) {
+        setMessage("Solo empresas pueden crear muebles");
+        handleClickOpen();
+        return;
+      }
+
+      const componentesConCantidad = componentesSeleccionados.map(
+        (componente) => ({
+          id_componente: componente.id_componente,
+          cantidad: componente.cantidad || 1, // Si no tiene cantidad, la ponemos en 1
+        })
+      );
+
+      const formDataToSend = new FormData();
+      formDataToSend.append('nombre', datos.nombre);
+      formDataToSend.append('precio_base', datos.precio_base);
+      formDataToSend.append('fecha_entrega', datos.fecha_entrega);
+      formDataToSend.append('requiere_montar', datos.requiere_montar);
+      formDataToSend.append('id_empresa', user.id_empresa);
+      formDataToSend.append('descripcion', datos.descripcion);
+      formDataToSend.append('componentes', JSON.stringify(componentesConCantidad));
+
+      if (imagen) {
+        formDataToSend.append('imagen', imagen);
+      }
+
+      const response = await axios.post(`${apiUrl}/mueble`, formDataToSend, {
         headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          mueble: datos,
-          componentes: componentesConCantidad,
-        }),
+          'Content-Type': 'multipart/form-data',
+        }
       });
 
-      if (response.ok) {
+      if (response.data.ok) {
         setMessage(`Mueble creado correctamente`);
+
+        setDatos({
+          nombre: "",
+          precio_base: "",
+          fecha_entrega: "",
+          requiere_montar: false,
+          id_empresa: user?.id_empresa || "",
+          descripcion: "",
+        });
+        setComponentesSeleccionados([]);
+        setImagen(null);
+        setImagenPreview('');
       } else {
-        setMessage(`Error al crear el mueble`);
+        setMessage(`Error al crear el mueble: ${response.data.mensaje}`);
       }
       handleClickOpen();
     } catch (error) {
@@ -143,25 +201,60 @@ function AltaMueble() {
   };
 
   useEffect(() => {
-    async function getComponentes() {
-      let response = await fetch("http://localhost:3000/api/componentes");
+    if (!isEmpresa) {
+      setRedirect(true);
+    }
 
-      if (response.ok) {
-        let data = await response.json();
-        setComponentes(data.datos);
+    if (isEmpresa() && user?.id_empresa) {
+      setDatos(prev => ({
+        ...prev,
+        id_empresa: user.id_empresa
+      }));
+    }
+
+    async function fetchComponentes() {
+      try {
+        // Cargar componentes
+        const responseComponentes = await fetch(`${apiUrl}/componentes`);
+        if (responseComponentes.ok) {
+          const dataComponentes = await responseComponentes.json();
+          setComponentes(dataComponentes.datos || []);
+        }
+      } catch (error) {
+        console.error("Error al cargar componentes:", error);
       }
     }
 
-    getComponentes();
-  }, []);
+    fetchComponentes();
+  }, [user, isEmpresa]);
+
+  if (redirect) {
+    return <Navigate to="/" replace />;
+  }
+
+  const handleImagenChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImagen(file);
+
+      // Crear una URL para la vista previa de la imagen
+      const fileReader = new FileReader();
+      fileReader.onload = () => {
+        setImagenPreview(fileReader.result);
+      };
+      fileReader.readAsDataURL(file);
+    }
+  };
 
   /**
    * Agrega un componente a la lista de componentes seleccionados.
    */
   const agregarComponente = () => {
-    // Buscar el componente por su id_componente en lugar de por índice
+    if (!componenteSel) return;
+
+    // Buscar el componente por su id_componente
     const componente = componentes.find(
-      (c) => c.id_componente === componenteSel
+      (c) => c.id_componente === parseInt(componenteSel)
     );
 
     if (!componente) return; // Si no encuentra el componente, salir
@@ -185,6 +278,9 @@ function AltaMueble() {
         return [...prevComponentes, { ...componente, cantidad: 1 }];
       }
     });
+
+    // Limpiar la selección
+    setComponenteSel("");
   };
 
   /**
@@ -209,23 +305,42 @@ function AltaMueble() {
     );
   }
 
+  const customDatePickerStyle = {
+    width: '100%',
+    padding: '16.5px 14px',
+    fontSize: '1rem',
+    borderRadius: '4px',
+    border: '1px solid rgba(0, 0, 0, 0.23)',
+    marginTop: '16px',
+    marginBottom: '8px',
+    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+    boxSizing: 'border-box'
+  };
+
+  if (!isEmpresa()) {
+    return <Typography variant="h6">Esta funcionalidad solo está disponible para empresas</Typography>;
+  }
+
   return (
     <>
-      <Typography variant="h4" align="center" sx={{ my: 3, color: "#332f2d" }}>
-        Alta de mueble
-      </Typography>
-      <Grid
-        container
-        spacing={2}
-        sx={{ alignItems: "center", justifyContent: "center", mb: 4 }}
-      >
-        <Grid size={{ lg: 4 }}>
-          <Stack
-            component="form"
-            spacing={2}
-            onSubmit={handleSubmit}
-            sx={{ mx: 2 }}
-          >
+      <Container component="main" maxWidth="sm">
+        <Paper
+          elevation={3}
+          sx={{
+            marginTop: 8,
+            marginBottom: 8,
+            padding: 4,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+          }}
+        >
+
+          <Typography variant="h4" align="center" sx={{ my: 3, color: "#332f2d" }}>
+            Alta de mueble
+          </Typography>
+
+          <Box component="form" onSubmit={handleSubmit} noValidate sx={{ width: '100%' }}>
             <TextField
               id="nombre"
               label="Nombre"
@@ -233,8 +348,11 @@ function AltaMueble() {
               type="text"
               value={datos.nombre}
               onChange={handleChange}
-              sx={{ mt: 2 }}
+              margin="normal"
+              fullWidth
+              required
             />
+
             <TextField
               id="precio"
               label="Precio base"
@@ -242,128 +360,280 @@ function AltaMueble() {
               type="number"
               value={datos.precio_base}
               onChange={handleChange}
-              sx={{ mt: 2 }}
+              margin="normal"
+              fullWidth
+              required
             />
-            <DatePicker
-              selected={
-                datos.fecha_entrega ? new Date(datos.fecha_entrega) : null
-              }
-              onChange={handleDateChange}
-              dateFormat="dd/MM/yyyy" // Formato de la fecha
-              placeholderText="Fecha de entrega:"
-              className="border rounded-lg py-2 px-3 w-100"
-              calendarClassName="custom-calendar"
-              dayClassName={(date) =>
-                datos.fecha_entrega === date.toISOString().split("T")[0]
-                  ? "selected-day"
-                  : "day"
-              }
-              locale="es"
+
+            <TextField
+              id="descripcion"
+              label="Descripción"
+              name="descripcion"
+              type="text"
+              value={datos.descripcion}
+              onChange={handleChange}
+              margin="normal"
+              multiline
+              rows={4}
+              fullWidth
+              required
             />
-            <style>{`
-              .selected-day {
-                background-color: #da6429 !important;
-                color: white !important;
-              }
-              .day:hover {
-                background-color: #f0814f !important;
-                color: white !important;
-              }
-            `}</style>
-            <MDBSwitch
-              id="flexSwitchCheckDefault"
-              label="¿El mueble requiere de montaje?"
-              name="requiere_montar"
-              onChange={(e) => handleChange(e)} // Actualiza el estado de en_stock
-              checked={
-                datos.requiere_montar === "true" ||
-                datos.requiere_montar === true
-              } // Para que sea un booleano
-            />
-            <Box sx={{ maxWidth: 500 }}>
+
+            <div style={{ marginTop: '16px', marginBottom: '8px' }}>
+              <label style={{ color: 'rgba(0, 0, 0, 0.6)', fontSize: '0.75rem', marginBottom: '4px', display: 'block' }}>
+                Fecha de entrega
+              </label>
+              <DatePicker
+                selected={
+                  datos.fecha_entrega ? new Date(datos.fecha_entrega) : null
+                }
+                onChange={handleDateChange}
+                dateFormat="dd/MM/yyyy" // Formato de la fecha
+                placeholderText="Fecha de entrega:"
+                className="custom-datepicker"
+                style={customDatePickerStyle}
+                locale="es"
+                minDate={new Date()} // No permitir fechas pasadas
+              />
+            </div>
+
+            <Box sx={{ my: 2 }}>
+              <MDBSwitch
+                id="flexSwitchCheckDefault"
+                label="¿El mueble requiere de montaje?"
+                name="requiere_montar"
+                onChange={(e) => handleChange(e)} // Actualiza el estado de en_stock
+                checked={
+                  datos.requiere_montar === "true" ||
+                  datos.requiere_montar === true
+                }
+              />
+            </Box>
+
+            <Button
+              component="label"
+              variant="contained"
+              startIcon={<CloudUploadIcon />}
+              sx={{
+                mt: 3,
+                mb: 2,
+                backgroundColor: "#da6429",
+                '&:hover': {
+                  backgroundColor: "#c55a24",
+                }
+              }}
+            >
+              Seleccionar Imagen (opcional)
+              <VisuallyHiddenInput type="file" accept="image/*" onChange={handleImagenChange} />
+            </Button>
+
+            {imagenPreview ? (
+              <Box sx={{ mt: 2, mb: 2 }}>
+                <Typography variant="subtitle1" gutterBottom>
+                  Vista previa:
+                </Typography>
+                <img
+                  src={imagenPreview}
+                  alt="Vista previa"
+                  style={{ maxWidth: '200px', maxHeight: '200px', objectFit: 'contain' }}
+                />
+
+                <Box sx={{ mt: 2 }}>
+                  <Button
+                    component="label"
+                    variant="contained"
+                    onClick={() => {
+                      setImagen(null);
+                      setImagenPreview('');
+                    }}
+                    sx={{
+                      mt: 3,
+                      mb: 2,
+                      backgroundColor: "#da6429",
+                      '&:hover': {
+                        backgroundColor: "#c55a24",
+                      }
+                    }}
+                  >
+                    Eliminar imagen
+                  </Button>
+                </Box>
+              </Box>
+            ) : (
+              <Box sx={{ mt: 2, mb: 2 }}>
+                <Typography variant="subtitle1" gutterBottom>
+                  Si no seleccionas una imagen, se usará una predeterminada.
+                </Typography>
+              </Box>
+            )}
+
+            <Box sx={{ mt: 4 }}>
+              <Typography variant="h6" sx={{ mb: 3, color: "#332f2d" }}>
+                Componentes del mueble
+              </Typography>
+
               <FormControl fullWidth>
-                <InputLabel id="lblComponentes">Componentes</InputLabel>
+                <InputLabel id="lblComponentes">Seleccionar componente</InputLabel>
                 <Select
                   labelId="lblComponentes"
                   id="lstComponentes"
                   value={componenteSel}
-                  label="Componente a seleccionar"
+                  label="Seleccionar componente"
                   onChange={handleChangeSel}
                 >
+                  <MenuItem value="">- Seleccione un componente -</MenuItem>
                   {componentes.map((componente) => (
                     <MenuItem
                       key={componente.id_componente}
                       value={componente.id_componente}
                     >
-                      {componente.nombre}
+                      {componente.nombre} - {componente.precio}€
                     </MenuItem>
                   ))}
                 </Select>
               </FormControl>
+
               <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
                 <Button
                   variant="contained"
                   sx={{ backgroundColor: "#da6429" }}
                   onClick={() => agregarComponente()}
+                  disabled={!componenteSel}
                 >
                   Agregar componente
                 </Button>
               </Box>
-              <TableContainer component={Paper} sx={{ mt: 2 }}>
-                <Table aria-label="simple table">
-                  <TableHead sx={{ backgroundColor: "#e2d0c6" }}>
-                    <TableRow>
-                      <TableCell align="center">NOMBRE</TableCell>
-                      <TableCell align="center">PRECIO</TableCell>
-                      <TableCell align="center">CANTIDAD</TableCell>
-                      <TableCell align="center">ELIMINAR</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {componentesSeleccionados.map((row) => (
-                      <TableRow
-                        key={row.id_componente}
-                        sx={{
-                          "&:last-child td, &:last-child th": { border: 0 },
-                        }}
-                      >
-                        <TableCell align="center">{row.nombre}</TableCell>
 
-                        <TableCell align="center">
-                          {row.precio + " €"}
-                        </TableCell>
-                        <TableCell align="center">{row.cantidad}</TableCell>
-                        <TableCell align="center">
-                          <Button
-                            onClick={() => handleDelete(row.id_componente)}
-                            style={{
-                              background: "none",
-                              border: "none",
-                              cursor: "pointer",
-                              padding: 0,
-                            }}
-                          >
-                            <DeleteIcon sx={{ color: "black" }} />
-                          </Button>
-                        </TableCell>
+              {componentesSeleccionados.length > 0 ? (
+                <TableContainer component={Paper} sx={{ mt: 2 }}>
+                  <Table aria-label="simple table">
+                    <TableHead sx={{ backgroundColor: "#e2d0c6" }}>
+                      <TableRow>
+                        <TableCell align="center">NOMBRE</TableCell>
+                        <TableCell align="center">PRECIO</TableCell>
+                        <TableCell align="center">CANTIDAD</TableCell>
+                        <TableCell align="center">ELIMINAR</TableCell>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
+                    </TableHead>
+                    <TableBody>
+                      {componentesSeleccionados.map((row) => (
+                        <TableRow
+                          key={row.id_componente}
+                          sx={{
+                            "&:last-child td, &:last-child th": { border: 0 },
+                          }}
+                        >
+                          <TableCell align="center">{row.nombre}</TableCell>
+                          <TableCell align="center">
+                            {row.precio + " €"}
+                          </TableCell>
+                          <TableCell align="center">{row.cantidad}</TableCell>
+                          <TableCell align="center">
+                            <Button
+                              onClick={() => handleDelete(row.id_componente)}
+                              style={{
+                                background: "none",
+                                border: "none",
+                                cursor: "pointer",
+                                padding: 0,
+                              }}
+                            >
+                              <DeleteIcon sx={{ color: "black" }} />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              ) : (
+                <Typography variant="body2" sx={{ mt: 2, textAlign: 'center', color: 'text.secondary' }}>
+                  No hay componentes seleccionados
+                </Typography>
+              )}
             </Box>
-            <Box sx={{ display: "flex", justifyContent: "center" }}>
-              <Button
-                variant="contained"
-                sx={{ mt: 2, backgroundColor: "#da6429" }}
-                type="submit"
-              >
-                Aceptar
-              </Button>
-            </Box>
-          </Stack>
-        </Grid>
-      </Grid>
+
+            <Button
+              variant="contained"
+              sx={{
+                mt: 3,
+                mb: 2,
+                backgroundColor: "#da6429",
+                '&:hover': {
+                  backgroundColor: "#c55a24",
+                }
+              }}
+              type="submit"
+              fullWidth
+            >
+              Guardar mueble
+            </Button>
+          </Box>
+        </Paper>
+      </Container >
+
+      <style>{`
+        .custom-datepicker {
+          width: 100%;
+          padding: 16.5px 14px;
+          font-size: 1rem;
+          border-radius: 4px;
+          border: 1px solid rgba(0, 0, 0, 0.23);
+          font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+          box-sizing: border-box;
+          margin-bottom: 10px;
+        }
+        
+        .react-datepicker-wrapper {
+          width: 100%;
+          display: block;
+        }
+        
+        .react-datepicker__input-container {
+          width: 100%;
+          display: block;
+        }
+        
+        .date-picker-wrapper {
+          width: 100%;
+          display: block;
+        }
+        
+        .custom-datepicker:focus {
+          border: 2px solid #da6429;
+          outline: none;
+        }
+        
+        .react-datepicker__day--selected {
+          background-color: #da6429 !important;
+          color: white !important;
+        }
+        
+        .react-datepicker__day:hover {
+          background-color: #f0814f !important;
+          color: white !important;
+        }
+        
+        /* Aumentar el tamaño del calendario */
+        .react-datepicker {
+          font-size: 1rem !important;
+        }
+        
+        .react-datepicker__header {
+          padding-top: 10px !important;
+        }
+        
+        .react-datepicker__month {
+          margin: 0.4rem !important;
+        }
+        
+        .react-datepicker__day-name, .react-datepicker__day {
+          width: 2rem !important;
+          line-height: 2rem !important;
+          margin: 0.2rem !important;
+        }
+      `}</style>
+
       <Dialog
         open={open}
         keepMounted

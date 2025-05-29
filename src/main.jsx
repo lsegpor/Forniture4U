@@ -14,6 +14,10 @@ import BuscarComponente from "./components/BuscarComponente";
 import BuscarMueble from "./components/BuscarMueble";
 import ListadoMueblesFecha from "./components/ListadoMueblesFecha";
 import MuebleComponentesChart from "./components/MuebleComponentesChart";
+import UserCompanyLogin from "./components/UserCompanyLogin";
+import UserCompanyRegister from "./components/UserCompanyRegister";
+import DetalleMueble from "./components/DetalleMueble";
+import PedidoPago from "./components/PedidoPago";
 
 import "@fontsource/roboto/300.css";
 import "@fontsource/roboto/400.css";
@@ -83,6 +87,22 @@ let router = createBrowserRouter([
       {
         path: "grafica",
         element: <MuebleComponentesChart />,
+      },
+      {
+        path: "login",
+        element: <UserCompanyLogin />,
+      },
+      {
+        path: "register",
+        element: <UserCompanyRegister />,
+      },
+      {
+        path: ":id_mueble",
+        element: <DetalleMueble />,
+      },
+      {
+        path: "checkout",
+        element: <PedidoPago />,
       },
     ],
   },

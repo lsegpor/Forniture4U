@@ -1,11 +1,9 @@
-import { Box, TextField, Button, Typography, Stack } from "@mui/material";
+import { Box, TextField, Button, Typography, Container, Paper } from "@mui/material";
 import { useState, useEffect } from "react";
-import Grid from "@mui/material/Grid2";
 import { useNavigate, useParams } from "react-router";
 import DatePicker, { registerLocale } from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { es } from "date-fns/locale";
-import { MDBSwitch } from "mdb-react-ui-kit";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
@@ -28,8 +26,9 @@ function ModificarComponente() {
     nombre: "",
     precio: "",
     fecha_importacion: "",
-    en_stock: "",
+    cantidad: "",
     material: "",
+    descripcion: "",
   });
 
   const navigate = useNavigate();
@@ -112,19 +111,6 @@ function ModificarComponente() {
   };
 
   /**
-   * Maneja el cambio del estado del switch.
-   * @param {Event} e - El evento de cambio del switch.
-   */
-  const handleSwitchChange = (e) => {
-    const { name, type, checked, value } = e.target;
-
-    setDatos((prevDatos) => ({
-      ...prevDatos,
-      [name]: type === "checkbox" ? checked : value,
-    }));
-  };
-
-  /**
    * Abre el diálogo de estado.
    */
   const handleClickOpen = () => {
@@ -139,22 +125,39 @@ function ModificarComponente() {
     navigate(-1);
   };
 
+  const customDatePickerStyle = {
+    width: '100%',
+    padding: '16.5px 14px',
+    fontSize: '1rem',
+    borderRadius: '4px',
+    border: '1px solid rgba(0, 0, 0, 0.23)',
+    marginTop: '16px',
+    marginBottom: '8px',
+    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+    boxSizing: 'border-box'
+  };
+
   return (
     <>
-      <Typography variant="h4" align="center" sx={{ my: 3, color: "#332f2d" }}>
-        Modificar componente
-      </Typography>
-      <Grid
-        container
-        spacing={2}
-        sx={{ alignItems: "center", justifyContent: "center" }}
-      >
-        <Grid size={{ lg: 4 }}>
-          <Stack
-            component="form"
-            spacing={2}
-            onSubmit={handleSubmit}
-            sx={{ mx: 2 }}
+      <Container component="main" maxWidth="sm">
+        <Paper
+          elevation={3}
+          sx={{
+            marginTop: 8,
+            marginBottom: 8,
+            padding: 4,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+          }}
+        >
+
+          <Typography variant="h4" align="center" sx={{ my: 3, color: "#332f2d" }}>
+            Modificar componente
+          </Typography>
+
+          <Box
+            component="form" onSubmit={handleSubmit} noValidate sx={{ width: '100%' }}
           >
             <TextField
               id="nombre"
@@ -163,8 +166,10 @@ function ModificarComponente() {
               type="text"
               value={datos.nombre}
               onChange={handleChange}
-              sx={{ mt: 2 }}
+              fullWidth
+              margin="normal"
             />
+
             <TextField
               id="precio"
               label="Precio"
@@ -172,43 +177,39 @@ function ModificarComponente() {
               type="number"
               value={datos.precio}
               onChange={handleChange}
-              sx={{ mt: 2 }}
+              fullWidth
+              margin="normal"
             />
-            <DatePicker
-              selected={
-                datos.fecha_importacion
-                  ? new Date(datos.fecha_importacion)
-                  : null
-              }
-              onChange={handleDateChange}
-              dateFormat="dd/MM/yyyy" // Formato de la fecha
-              placeholderText="Fecha de importación:"
-              className="border rounded-lg py-2 px-3 w-100"
-              calendarClassName="custom-calendar"
-              dayClassName={(date) =>
-                datos.fecha_importacion === date.toISOString().split("T")[0]
-                  ? "selected-day"
-                  : "day"
-              }
-              locale="es"
+
+            <div style={{ marginTop: "16px", marginBottom: "8px" }}>
+              <label style={{ color: "rgba(0, 0, 0, 0.6", fontSize: "0.75rem", marginBottom: "4px", display: "block" }}>Fecha de importación</label>
+              <DatePicker
+                selected={
+                  datos.fecha_importacion
+                    ? new Date(datos.fecha_importacion)
+                    : null
+                }
+                onChange={handleDateChange}
+                dateFormat="dd/MM/yyyy" // Formato de la fecha
+                placeholderText="Fecha de importación:"
+                className="custom-datepicker"
+                style={customDatePickerStyle}
+                minDate={new Date()} // Deshabilitar fechas pasadas
+                locale="es"
+              />
+            </div>
+
+            <TextField
+              id="cantidad"
+              label="Cantidad"
+              name="cantidad"
+              type="number"
+              value={datos.cantidad}
+              onChange={handleChange}
+              fullWidth
+              margin="normal"
             />
-            <style>{`
-              .selected-day {
-                background-color: #da6429 !important;
-                color: white !important;
-              }
-              .day:hover {
-                background-color: #f0814f !important;
-                color: white !important;
-              }
-            `}</style>
-            <MDBSwitch
-              id="flexSwitchCheckDefault"
-              label="¿Se encuentra disponible en stock?"
-              name="en_stock"
-              onChange={handleSwitchChange} // Actualiza el estado de en_stock
-              checked={Boolean(datos.en_stock)}
-            />
+
             <TextField
               id="material"
               label="Material"
@@ -216,20 +217,104 @@ function ModificarComponente() {
               type="text"
               value={datos.material}
               onChange={handleChange}
-              sx={{ mt: 2 }}
+              fullWidth
+              margin="normal"
             />
-            <Box sx={{ display: "flex", justifyContent: "center" }}>
-              <Button
-                variant="contained"
-                sx={{ mt: 2, backgroundColor: "#da6429" }}
-                type="submit"
-              >
-                Aceptar
-              </Button>
-            </Box>
-          </Stack>
-        </Grid>
-      </Grid>
+
+            <TextField
+              id="descripcion"
+              label="Descripción"
+              name="descripcion"
+              type="text"
+              value={datos.descripcion}
+              onChange={handleChange}
+              fullWidth
+              multiline
+              rows={4}
+              margin="normal"
+            />
+
+            <Button
+              variant="contained"
+              type="submit"
+              fullWidth
+              sx={{
+                mt: 3,
+                mb: 2,
+                backgroundColor: "#da6429",
+                "&:hover": {
+                  backgroundColor: "#c55a24"
+                }
+              }}
+            >
+              Guardar Componente
+            </Button>
+          </Box>
+        </Paper>
+      </Container>
+
+      {/* Estilos personalizados para el datepicker */}
+      <style>{`
+        .custom-datepicker {
+          width: 100%;
+          padding: 16.5px 14px;
+          font-size: 1rem;
+          border-radius: 4px;
+          border: 1px solid rgba(0, 0, 0, 0.23);
+          font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+          box-sizing: border-box;
+        }
+        
+        .react-datepicker-wrapper {
+          width: 100%;
+          display: block;
+        }
+        
+        .react-datepicker__input-container {
+          width: 100%;
+          display: block;
+        }
+        
+        .date-picker-wrapper {
+          width: 100%;
+          display: block;
+        }
+        
+        .custom-datepicker:focus {
+          border: 2px solid #da6429;
+          outline: none;
+        }
+        
+        .react-datepicker__day--selected {
+          background-color: #da6429 !important;
+          color: white !important;
+        }
+        
+        .react-datepicker__day:hover {
+          background-color: #f0814f !important;
+          color: white !important;
+        }
+        
+        /* Aumentar el tamaño del calendario */
+        .react-datepicker {
+          font-size: 1rem !important;
+        }
+        
+        .react-datepicker__header {
+          padding-top: 10px !important;
+        }
+        
+        .react-datepicker__month {
+          margin: 0.4rem !important;
+        }
+        
+        .react-datepicker__day-name, .react-datepicker__day {
+          width: 2rem !important;
+          line-height: 2rem !important;
+          margin: 0.2rem !important;
+        }
+      `}</style>
+
       <Dialog
         open={open}
         keepMounted

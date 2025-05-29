@@ -8,7 +8,7 @@ import Paper from "@mui/material/Paper";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import Button from "@mui/material/Button";
-import FormatListBulletedIcon from "@mui/icons-material/FormatListBulleted";
+import InfoIcon from "@mui/icons-material/Info";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
@@ -20,6 +20,7 @@ import Box from "@mui/material/Box";
 import { useParams } from "react-router";
 import { useState, useEffect } from "react";
 import { apiUrl } from "../config";
+import useUserStore from "../stores/useUserStore";
 
 /**
  * Componente BuscarMueble que permite buscar y gestionar muebles.
@@ -30,7 +31,10 @@ function BuscarMueble() {
   const [muebles, setMuebles] = useState([]);
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState("");
-  const Navigate = useNavigate();
+  const navigate = useNavigate();
+
+  const isEmpresa = useUserStore((state) => state.isEmpresa());
+  const user = useUserStore((state) => state.user);
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -101,14 +105,18 @@ function BuscarMueble() {
           <Table sx={{ minWidth: 650 }} aria-label="simple table">
             <TableHead sx={{ backgroundColor: "#e2d0c6" }}>
               <TableRow>
-                <TableCell align="center">IDMUEBLE</TableCell>
                 <TableCell align="center">NOMBRE</TableCell>
                 <TableCell align="center">PRECIO BASE</TableCell>
                 <TableCell align="center">FECHA DE ENTREGA</TableCell>
                 <TableCell align="center">REQUIERE MONTAR</TableCell>
-                <TableCell align="center">LISTAR COMPONENTES</TableCell>
-                <TableCell align="center">ELIMINAR</TableCell>
-                <TableCell align="center">EDITAR</TableCell>
+                <TableCell align="center">EMPRESA</TableCell>
+                <TableCell align="center">DETALLES</TableCell>
+                {isEmpresa && (
+                  <>
+                    <TableCell align="center">ELIMINAR</TableCell>
+                    <TableCell align="center">EDITAR</TableCell>
+                  </>
+                )}
               </TableRow>
             </TableHead>
             <TableBody>
@@ -117,31 +125,17 @@ function BuscarMueble() {
                   key={row.id_mueble}
                   sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
                 >
-                  <TableCell align="center">{row.id_mueble}</TableCell>
                   <TableCell align="center">{row.nombre}</TableCell>
                   <TableCell align="center">{row.precio_base + "€"}</TableCell>
                   <TableCell align="center">{row.fecha_entrega}</TableCell>
                   <TableCell align="center">
                     {row.requiere_montar ? "Sí" : "No"}
                   </TableCell>
-                  <TableCell align="center"><FormatListBulletedIcon sx={{ color: "black" }}/></TableCell>
-                  <TableCell align="center">
-                    <Button
-                      onClick={() => handleDelete(row.id_mueble)}
-                      style={{
-                        background: "none",
-                        border: "none",
-                        cursor: "pointer",
-                        padding: 0,
-                      }}
-                    >
-                      <DeleteIcon sx={{ color: "black" }} />
-                    </Button>
-                  </TableCell>
+                  <TableCell align="center">{row.id_empresa_empresa?.nombre_empresa}</TableCell>
                   <TableCell align="center">
                     <Button
                       onClick={() =>
-                        Navigate("/modificarmueble/" + row.id_mueble)
+                        navigate("/" + row.id_mueble)
                       }
                       style={{
                         background: "none",
@@ -150,9 +144,43 @@ function BuscarMueble() {
                         padding: 0,
                       }}
                     >
-                      <EditIcon sx={{ color: "black" }} />
+                      <InfoIcon sx={{ color: "#da6429" }} />
                     </Button>
                   </TableCell>
+                  {isEmpresa && (
+                    <>
+                      <TableCell align="center">
+                        <Button
+                          onClick={() => handleDelete(row.id_mueble)}
+                          disabled={!(user?.id_empresa === row.id_empresa)}
+                          style={{
+                            background: "none",
+                            border: "none",
+                            cursor: "pointer",
+                            padding: 0,
+                          }}
+                        >
+                          <DeleteIcon sx={{ color: "black" }} />
+                        </Button>
+                      </TableCell>
+                      <TableCell align="center">
+                        <Button
+                          onClick={() =>
+                            navigate("/modificarmueble/" + row.id_mueble)
+                          }
+                          disabled={!(user?.id_empresa === row.id_empresa)}
+                          style={{
+                            background: "none",
+                            border: "none",
+                            cursor: "pointer",
+                            padding: 0,
+                          }}
+                        >
+                          <EditIcon sx={{ color: "black" }} />
+                        </Button>
+                      </TableCell>
+                    </>
+                  )}
                 </TableRow>
               ))}
             </TableBody>
