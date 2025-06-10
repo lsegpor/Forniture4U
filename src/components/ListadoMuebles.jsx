@@ -24,8 +24,13 @@ import {
   Snackbar,
   Alert,
   Link,
-  Divider,
-  Chip
+  Container,
+  Card,
+  CardContent,
+  CardActions,
+  Chip,
+  useMediaQuery,
+  useTheme
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
@@ -33,7 +38,8 @@ import InfoIcon from "@mui/icons-material/Info";
 import CloseIcon from '@mui/icons-material/Close';
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart";
-import ConstructionIcon from "@mui/icons-material/Construction";
+import BuildIcon from "@mui/icons-material/Build";
+import BusinessIcon from "@mui/icons-material/Business";
 import { apiUrl } from "../config";
 import useUserStore from "../stores/useUserStore";
 import useCarritoStore from "../stores/useCarritoStore";
@@ -49,7 +55,10 @@ function ListadoMuebles() {
   const [openCarritoModal, setOpenCarritoModal] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   const [openLoginDialog, setOpenLoginDialog] = useState(false);
-  const [loading, setLoading] = useState(false);
+
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isTablet = useMediaQuery(theme.breakpoints.down('lg'));
 
   const navigate = useNavigate();
 
@@ -143,12 +152,9 @@ function ListadoMuebles() {
 
   const handleActualizarCantidad = async (id_producto, tipo_producto, nuevaCantidad) => {
     try {
-      setLoading(true);
       await actualizarCantidad(id_producto, tipo_producto, nuevaCantidad);
     } catch (error) {
       showSnackbar(error.message, 'error');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -167,7 +173,6 @@ function ListadoMuebles() {
 
   const handleAgregarAlCarrito = async (mueble) => {
     try {
-      setLoading(true);
       showSnackbar('Verificando disponibilidad...', 'info');
 
       // Formatear el mueble para el carrito
@@ -194,8 +199,6 @@ function ListadoMuebles() {
       showSnackbar(`${mueble.nombre} agregado al carrito`, 'success');
     } catch (error) {
       showSnackbar(error.message || 'Error al agregar al carrito', 'error');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -227,151 +230,338 @@ function ListadoMuebles() {
     }
   };
 
+  // Componente Card para vista móvil
+  const MuebleCard = ({ mueble }) => (
+    <Card
+      sx={{
+        mb: 2,
+        borderRadius: 2,
+        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+        '&:hover': {
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+        }
+      }}
+    >
+      <CardContent sx={{ pb: 1 }}>
+        <Typography
+          variant="h6"
+          component="div"
+          sx={{
+            mb: 1,
+            color: '#332f2d',
+            fontSize: { xs: '1.1rem', sm: '1.25rem' }
+          }}
+        >
+          {mueble.nombre}
+        </Typography>
+
+        <Box sx={{ mb: 2 }}>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+            <strong>Precio:</strong> {mueble.precio_base}€
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+            <strong>Fecha entrega:</strong> {mueble.fecha_entrega}
+          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1, mb: 1 }}>
+            <BuildIcon sx={{ fontSize: '1rem', color: 'text.secondary' }} />
+            <Chip
+              label={mueble.requiere_montar ? "Requiere montaje" : "Sin montaje"}
+              size="small"
+              color={mueble.requiere_montar ? "warning" : "success"}
+              variant="outlined"
+            />
+          </Box>
+          {mueble.id_empresa_empresa?.nombre_empresa && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
+              <BusinessIcon sx={{ fontSize: '1rem', color: 'text.secondary' }} />
+              <Typography variant="body2" color="text.secondary">
+                {mueble.id_empresa_empresa.nombre_empresa}
+              </Typography>
+            </Box>
+          )}
+        </Box>
+      </CardContent>
+
+      <CardActions sx={{ pt: 0, px: 2, pb: 2 }}>
+        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', width: '100%' }}>
+          <Button
+            size="small"
+            startIcon={<InfoIcon />}
+            onClick={() => navigate("/" + mueble.id_mueble)}
+            sx={{
+              color: '#da6429',
+              borderColor: '#da6429',
+              '&:hover': {
+                borderColor: '#c55520',
+                backgroundColor: 'rgba(218, 100, 41, 0.04)'
+              }
+            }}
+            variant="outlined"
+          >
+            Ver Detalles
+          </Button>
+
+          {!isEmpresa && (
+            <Tooltip title={
+              tieneProducto(mueble.id_mueble, 'mueble') ? "Ya está en el carrito" : "Agregar al carrito"
+            }>
+              <span>
+                <Button
+                  size="small"
+                  startIcon={<AddShoppingCartIcon />}
+                  onClick={() => handleAgregarAlCarrito(mueble)}
+                  variant={tieneProducto(mueble.id_mueble, 'mueble') ? "contained" : "outlined"}
+                  sx={{
+                    backgroundColor: tieneProducto(mueble.id_mueble, 'mueble') ? "#4caf50" : "transparent",
+                    color: tieneProducto(mueble.id_mueble, 'mueble') ? "white" : "#da6429",
+                    borderColor: tieneProducto(mueble.id_mueble, 'mueble') ? "#4caf50" : "#da6429",
+                    '&:hover': {
+                      backgroundColor: tieneProducto(mueble.id_mueble, 'mueble') ? "#45a049" : "rgba(218, 100, 41, 0.04)",
+                      borderColor: tieneProducto(mueble.id_mueble, 'mueble') ? "#45a049" : "#c55520",
+                    }
+                  }}
+                >
+                  {tieneProducto(mueble.id_mueble, 'mueble') ? "En carrito" : "Agregar"}
+                </Button>
+              </span>
+            </Tooltip>
+          )}
+
+          {isEmpresa && (
+            <>
+              <Button
+                size="small"
+                startIcon={<EditIcon />}
+                onClick={() => navigate("/modificarmueble/" + mueble.id_mueble)}
+                disabled={!(user?.id_empresa === mueble.id_empresa)}
+                variant="outlined"
+                sx={{
+                  color: '#666',
+                  borderColor: '#666',
+                  '&:hover': {
+                    borderColor: '#333',
+                    backgroundColor: 'rgba(0,0,0,0.04)'
+                  },
+                  '&:disabled': {
+                    color: '#ccc',
+                    borderColor: '#ccc'
+                  }
+                }}
+              >
+                Editar
+              </Button>
+              <Button
+                size="small"
+                startIcon={<DeleteIcon />}
+                onClick={() => handleDelete(mueble.id_mueble)}
+                disabled={!(user?.id_empresa === mueble.id_empresa)}
+                variant="outlined"
+                color="error"
+                sx={{
+                  '&:hover': {
+                    backgroundColor: 'rgba(211, 47, 47, 0.04)'
+                  },
+                  '&:disabled': {
+                    color: '#ccc',
+                    borderColor: '#ccc'
+                  }
+                }}
+              >
+                Eliminar
+              </Button>
+            </>
+          )}
+        </Box>
+      </CardActions>
+    </Card>
+  );
+
   return (
-    <>
-      <Typography variant="h4" align="center" sx={{ m: 4, color: "#332f2d" }}>
+    <Container maxWidth="lg" sx={{ px: { xs: 1, sm: 2, md: 3 }, py: { xs: 2, sm: 3 } }}>
+      <Typography
+        variant="h4"
+        align="center"
+        sx={{
+          mb: { xs: 3, sm: 4 },
+          color: "#332f2d",
+          fontFamily: '"Georgia", "Times New Roman", serif',
+          fontWeight: 'bold',
+          fontSize: { xs: '1.8rem', sm: '2.2rem', md: '2.5rem' },
+          px: 1
+        }}
+      >
         Listado de muebles
       </Typography>
 
       {/* Botón flotante del carrito */}
       {!isEmpresa && (
-        <>
-          <Fab
-            color="primary"
-            aria-label="carrito"
-            onClick={handleOpenCarritoModal}
-            sx={{
-              position: 'fixed',
-              top: 130,
-              right: 20,
-              backgroundColor: '#da6429',
-              '&:hover': {
-                backgroundColor: '#c55520'
-              },
-              zIndex: 1000
-            }}
-          >
-            <Badge badgeContent={getCantidadTotal()} color="error">
-              <ShoppingCartIcon />
-            </Badge>
-          </Fab>
-        </>
+        <Fab
+          color="primary"
+          aria-label="carrito"
+          onClick={handleOpenCarritoModal}
+          sx={{
+            position: 'fixed',
+            top: {
+              xs: 'calc(180px + 1rem)', // 70px altura navbar móvil + margen
+              sm: 'calc(120px + 1rem)',
+              md: 'calc(120px + 1rem)', // 80px altura navbar desktop + margen
+              lg: 'calc(100px + 1rem)'
+            },
+            right: { xs: 16, sm: 20 },
+            backgroundColor: '#da6429',
+            '&:hover': {
+              backgroundColor: '#c55520'
+            },
+            zIndex: 1000,
+            width: { xs: 48, sm: 56 },
+            height: { xs: 48, sm: 56 }
+          }}
+        >
+          <Badge badgeContent={getCantidadTotal()} color="error">
+            <ShoppingCartIcon sx={{ fontSize: { xs: '1.2rem', sm: '1.5rem' } }} />
+          </Badge>
+        </Fab>
       )}
 
-      <Box sx={{ mx: 10 }}>
-        <TableContainer component={Paper} sx={{ my: 2 }}>
-          <Table sx={{ minWidth: 650 }} aria-label="simple table">
-            <TableHead sx={{ backgroundColor: "#e2d0c6" }}>
-              <TableRow>
-                <TableCell align="center">NOMBRE</TableCell>
-                <TableCell align="center">PRECIO BASE</TableCell>
-                <TableCell align="center">FECHA DE ENTREGA</TableCell>
-                <TableCell align="center">REQUIERE MONTAR</TableCell>
-                <TableCell align="center">EMPRESA</TableCell>
-                <TableCell align="center">DETALLES</TableCell>
-                {!isEmpresa && (
-                  <TableCell align="center">AGREGAR AL CARRITO</TableCell>
-                )}
-                {isEmpresa && (
-                  <>
-                    <TableCell align="center">ELIMINAR</TableCell>
-                    <TableCell align="center">EDITAR</TableCell>
-                  </>
-                )}
-              </TableRow>
-            </TableHead>
-
-            <TableBody>
-              {rows.map((row) => (
-                <TableRow
-                  key={row.id_mueble}
-                  sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-                >
-                  <TableCell align="center">{row.nombre}</TableCell>
-                  <TableCell align="center">{row.precio_base + "€"}</TableCell>
-                  <TableCell align="center">{row.fecha_entrega}</TableCell>
-                  <TableCell align="center">
-                    {row.requiere_montar ? "Sí" : "No"}
-                  </TableCell>
-                  <TableCell align="center">{row.id_empresa_empresa?.nombre_empresa}</TableCell>
-                  <TableCell align="center">
-                    <Button
-                      onClick={() =>
-                        navigate("/" + row.id_mueble)
-                      }
-                      style={{
-                        background: "none",
-                        border: "none",
-                        cursor: "pointer",
-                        padding: 0,
-                      }}
-                    >
-                      <InfoIcon sx={{ color: "#da6429" }} />
-                    </Button>
-                  </TableCell>
+      <Box>
+        {isMobile || isTablet ? (
+          // Vista de cards para móvil y tablet
+          <Box sx={{ px: { xs: 1, sm: 2 } }}>
+            {rows.length === 0 ? (
+              <Box sx={{ textAlign: 'center', py: 4 }}>
+                <Typography variant="h6" color="text.secondary">
+                  No se encontraron muebles
+                </Typography>
+              </Box>
+            ) : (
+              rows.map((mueble) => (
+                <MuebleCard key={mueble.id_mueble} mueble={mueble} />
+              ))
+            )}
+          </Box>
+        ) : (
+          <TableContainer
+            component={Paper}
+            sx={{
+              my: 2,
+              mx: { xs: 1, sm: 2, lg: 4 },
+              borderRadius: 2,
+              boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+            }}
+          >
+            <Table sx={{ minWidth: 650 }} aria-label="simple table">
+              <TableHead sx={{ backgroundColor: "#e2d0c6" }}>
+                <TableRow>
+                  <TableCell align="center" sx={{ fontWeight: 'bold' }}>NOMBRE</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 'bold' }}>PRECIO BASE</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 'bold' }}>FECHA DE ENTREGA</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 'bold' }}>REQUIERE MONTAR</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 'bold' }}>EMPRESA</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 'bold' }}>DETALLES</TableCell>
                   {!isEmpresa && (
+                    <TableCell align="center" sx={{ fontWeight: 'bold' }}>AGREGAR AL CARRITO</TableCell>
+                  )}
+                  {isEmpresa && (
+                    <>
+                      <TableCell align="center" sx={{ fontWeight: 'bold' }}>ELIMINAR</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: 'bold' }}>EDITAR</TableCell>
+                    </>
+                  )}
+                </TableRow>
+              </TableHead>
+
+              <TableBody>
+                {rows.map((row) => (
+                  <TableRow
+                    key={row.id_mueble}
+                    sx={{
+                      "&:last-child td, &:last-child th": { border: 0 },
+                      '&:hover': {
+                        backgroundColor: 'rgba(0, 0, 0, 0.02)'
+                      }
+                    }}
+                  >
+                    <TableCell align="center">{row.nombre}</TableCell>
+                    <TableCell align="center">{row.precio_base + "€"}</TableCell>
+                    <TableCell align="center">{row.fecha_entrega}</TableCell>
                     <TableCell align="center">
-                      <Tooltip title={
-                        tieneProducto(row.id_mueble, 'mueble') ?
-                          "Ya está en el carrito" :
-                          "Agregar al carrito"
-                      }>
-                        <span>
+                      <Chip
+                        label={row.requiere_montar ? "Sí" : "No"}
+                        size="small"
+                        color={row.requiere_montar ? "warning" : "success"}
+                        variant="outlined"
+                      />
+                    </TableCell>
+                    <TableCell align="center">{row.id_empresa_empresa?.nombre_empresa}</TableCell>
+                    <TableCell align="center">
+                      <IconButton
+                        onClick={() => navigate("/" + row.id_mueble)}
+                        sx={{ color: "#da6429" }}
+                      >
+                        <InfoIcon />
+                      </IconButton>
+                    </TableCell>
+                    {!isEmpresa && (
+                      <TableCell align="center">
+                        <Tooltip title={
+                          tieneProducto(row.id_mueble, 'mueble') ?
+                            "Ya está en el carrito" :
+                            "Agregar al carrito"
+                        }>
+                          <span>
+                            <IconButton
+                              onClick={() => handleAgregarAlCarrito(row)}
+                              sx={{
+                                color: tieneProducto(row.id_mueble, 'mueble') ? "#4caf50" : "#da6429",
+                                '&:disabled': {
+                                  color: '#ccc'
+                                }
+                              }}
+                            >
+                              <AddShoppingCartIcon />
+                            </IconButton>
+                          </span>
+                        </Tooltip>
+                      </TableCell>
+                    )}
+                    {isEmpresa && (
+                      <>
+                        <TableCell align="center">
                           <IconButton
-                            onClick={() => handleAgregarAlCarrito(row)}
-                            disabled={loading}
+                            onClick={() => handleDelete(row.id_mueble)}
+                            disabled={!(user?.id_empresa === row.id_empresa)}
                             sx={{
-                              color: tieneProducto(row.id_mueble, 'mueble') ? "#4caf50" : "#da6429",
+                              color: "#d32f2f",
                               '&:disabled': {
                                 color: '#ccc'
                               }
                             }}
                           >
-                            <AddShoppingCartIcon />
+                            <DeleteIcon />
                           </IconButton>
-                        </span>
-                      </Tooltip>
-                    </TableCell>
-                  )}
-                  {isEmpresa && (
-                    <>
-                      <TableCell align="center">
-                        <Button
-                          onClick={() => handleDelete(row.id_mueble)}
-                          disabled={!(user?.id_empresa === row.id_empresa)}
-                          style={{
-                            background: "none",
-                            border: "none",
-                            cursor: "pointer",
-                            padding: 0,
-                          }}
-                        >
-                          <DeleteIcon sx={{ color: "black" }} />
-                        </Button>
-                      </TableCell>
-                      <TableCell align="center">
-                        <Button
-                          onClick={() =>
-                            navigate("/modificarmueble/" + row.id_mueble)
-                          }
-                          disabled={!(user?.id_empresa === row.id_empresa)}
-                          style={{
-                            background: "none",
-                            border: "none",
-                            cursor: "pointer",
-                            padding: 0,
-                          }}
-                        >
-                          <EditIcon sx={{ color: "black" }} />
-                        </Button>
-                      </TableCell>
-                    </>
-                  )}
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+                        </TableCell>
+                        <TableCell align="center">
+                          <IconButton
+                            onClick={() => navigate("/modificarmueble/" + row.id_mueble)}
+                            disabled={!(user?.id_empresa === row.id_empresa)}
+                            sx={{
+                              color: "#666",
+                              '&:disabled': {
+                                color: '#ccc'
+                              }
+                            }}
+                          >
+                            <EditIcon />
+                          </IconButton>
+                        </TableCell>
+                      </>
+                    )}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
 
         {/* Modal del carrito */}
         {!isEmpresa && (
@@ -387,7 +577,12 @@ function ListadoMuebles() {
                 alignItems: 'center',
                 mb: 3
               }}>
-                <Typography id="carrito-modal-title" variant="h5" component="h2">
+                <Typography
+                  id="carrito-modal-title"
+                  variant="h5"
+                  component="h2"
+                  sx={{ fontSize: { xs: '1.3rem', sm: '1.5rem' } }}
+                >
                   🛒 Carrito de Compras
                 </Typography>
                 <IconButton
@@ -400,33 +595,61 @@ function ListadoMuebles() {
 
               {items.length === 0 ? (
                 <Box sx={{ textAlign: 'center', py: 4 }}>
-                  <Typography variant="h6" color="text.secondary">
+                  <Typography
+                    variant="h6"
+                    color="text.secondary"
+                    sx={{ fontSize: { xs: '1.1rem', sm: '1.25rem' } }}
+                  >
                     El carrito está vacío
                   </Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ mt: 1, fontSize: { xs: '0.85rem', sm: '0.9rem' } }}
+                  >
                     Agrega algunos productos para comenzar
                   </Typography>
                 </Box>
               ) : (
                 <>
-                  <Box sx={{ maxHeight: '400px', overflowY: 'auto', mb: 3 }}>
+                  <Box sx={{ maxHeight: { xs: '300px', sm: '400px' }, overflowY: 'auto', mb: 3 }}>
                     {items.map((item) => (
                       <Paper
                         key={`${item.id_producto}-${item.tipo_producto}`}
                         elevation={1}
-                        sx={{ p: 2, mb: 2 }}
+                        sx={{ p: { xs: 1.5, sm: 2 }, mb: 2 }}
                       >
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                        <Box sx={{
+                          display: 'flex',
+                          flexDirection: { xs: 'column', sm: 'row' },
+                          justifyContent: 'space-between',
+                          alignItems: { xs: 'stretch', sm: 'center' },
+                          gap: { xs: 2, sm: 0 }
+                        }}>
                           <Box sx={{ flex: 1 }}>
-                            <Typography variant="h6">
+                            <Typography
+                              variant="h6"
+                              gutterBottom
+                              sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}
+                            >
                               {item.nombre}
                             </Typography>
-                            <Typography variant="body2" color="text.secondary">
+                            <Typography
+                              variant="body2"
+                              color="text.secondary"
+                              sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}
+                            >
                               Precio unitario: {item.precio}€
                             </Typography>
                           </Box>
 
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                          <Box sx={{
+                            display: 'flex',
+                            flexDirection: { xs: 'row', sm: 'row' },
+                            alignItems: 'center',
+                            justifyContent: { xs: 'space-between', sm: 'flex-end' },
+                            gap: { xs: 1, sm: 2 }
+                          }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                               <IconButton
                                 onClick={() => handleActualizarCantidad(
@@ -435,11 +658,17 @@ function ListadoMuebles() {
                                   item.cantidad - 1
                                 )}
                                 size="small"
-                                disabled={loading}
                               >
                                 -
                               </IconButton>
-                              <Typography variant="body1" sx={{ minWidth: 30, textAlign: 'center' }}>
+                              <Typography
+                                variant="body1"
+                                sx={{
+                                  minWidth: 30,
+                                  textAlign: 'center',
+                                  fontSize: { xs: '0.9rem', sm: '1rem' }
+                                }}
+                              >
                                 {item.cantidad}
                               </Typography>
                               <IconButton
@@ -449,13 +678,20 @@ function ListadoMuebles() {
                                   item.cantidad + 1
                                 )}
                                 size="small"
-                                disabled={loading || (item.stock_disponible && item.cantidad >= item.stock_disponible)}
+                                disabled={item.stock_disponible && item.cantidad >= item.stock_disponible}
                               >
                                 +
                               </IconButton>
                             </Box>
 
-                            <Typography variant="body1" fontWeight="bold" sx={{ minWidth: 70, textAlign: 'right' }}>
+                            <Typography
+                              variant="body1"
+                              fontWeight="bold"
+                              sx={{
+                                minWidth: { xs: 50, sm: 60 },
+                                fontSize: { xs: '0.9rem', sm: '1rem' }
+                              }}
+                            >
                               {(item.precio * item.cantidad).toFixed(2)}€
                             </Typography>
 
@@ -463,9 +699,8 @@ function ListadoMuebles() {
                               onClick={() => eliminarItem(item.id_producto, item.tipo_producto)}
                               color="error"
                               size="small"
-                              disabled={loading}
                             >
-                              <DeleteIcon />
+                              <DeleteIcon sx={{ fontSize: { xs: '1rem', sm: '1.2rem' } }} />
                             </IconButton>
                           </Box>
                         </Box>
@@ -473,33 +708,58 @@ function ListadoMuebles() {
                     ))}
                   </Box>
 
-                  <Divider sx={{ my: 2 }} />
-
                   <Box sx={{ borderTop: 1, borderColor: 'divider', pt: 2 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                      <Typography variant="h6">
+                    <Box sx={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      mb: 2,
+                      flexDirection: { xs: 'column', sm: 'row' },
+                      gap: { xs: 1, sm: 0 }
+                    }}>
+                      <Typography
+                        variant="h6"
+                        sx={{ fontSize: { xs: '1.1rem', sm: '1.25rem' } }}
+                      >
                         Total: {total.toFixed(2)}€
                       </Typography>
-                      <Typography variant="body2" color="text.secondary">
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}
+                      >
                         {getCantidadTotal()} {getCantidadTotal() === 1 ? 'artículo' : 'artículos'}
                       </Typography>
                     </Box>
 
-                    <Box sx={{ display: 'flex', gap: 2 }}>
+                    <Box sx={{
+                      display: 'flex',
+                      flexDirection: { xs: 'column', sm: 'row' },
+                      gap: 2
+                    }}>
                       <Button
                         variant="outlined"
                         onClick={limpiarCarrito}
                         fullWidth
-                        disabled={loading}
+                        sx={{
+                          height: { xs: '44px', sm: '48px' },
+                          fontSize: { xs: '0.9rem', sm: '1rem' }
+                        }}
                       >
                         Vaciar Carrito
                       </Button>
                       <Button
                         variant="contained"
-                        sx={{ backgroundColor: '#da6429' }}
+                        sx={{
+                          backgroundColor: '#da6429',
+                          height: { xs: '44px', sm: '48px' },
+                          fontSize: { xs: '0.9rem', sm: '1rem' },
+                          '&:hover': {
+                            backgroundColor: '#c55520'
+                          }
+                        }}
                         onClick={handleProcederCheckout}
                         fullWidth
-                        disabled={loading}
                       >
                         Proceder al Checkout
                       </Button>
@@ -515,11 +775,26 @@ function ListadoMuebles() {
       {/* Snackbar para notificaciones */}
       <Snackbar
         open={snackbar.open}
-        autoHideDuration={4000}
+        autoHideDuration={3000}
         onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: isMobile ? 'center' : 'left'
+        }}
+        sx={{
+          '& .MuiSnackbarContent-root': {
+            fontSize: { xs: '0.85rem', sm: '0.9rem' }
+          }
+        }}
       >
-        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
+          sx={{
+            width: '100%',
+            fontSize: { xs: '0.85rem', sm: '0.9rem' }
+          }}
+        >
           {snackbar.message}
         </Alert>
       </Snackbar>
@@ -530,6 +805,13 @@ function ListadoMuebles() {
         onClose={handleCloseLoginDialog}
         maxWidth="sm"
         fullWidth
+        sx={{
+          '& .MuiDialog-paper': {
+            margin: { xs: 2, sm: 4 },
+            width: { xs: 'calc(100% - 32px)', sm: 'auto' },
+            maxWidth: { xs: 'calc(100% - 32px)', sm: '600px' }
+          }
+        }}
       >
         <DialogTitle sx={{
           textAlign: 'center',
@@ -538,15 +820,22 @@ function ListadoMuebles() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          gap: 1
+          gap: 1,
+          fontSize: { xs: '1.1rem', sm: '1.25rem' }
         }}>
           🔐 ¿Tienes cuenta?
         </DialogTitle>
         <DialogContent sx={{ textAlign: 'center', py: 3 }}>
-          <DialogContentText sx={{ fontSize: '1.1rem', mb: 2 }}>
+          <DialogContentText sx={{
+            fontSize: { xs: '1rem', sm: '1.1rem' },
+            mb: 2
+          }}>
             Para proceder al checkout necesitas iniciar sesión
           </DialogContentText>
-          <DialogContentText sx={{ color: 'text.secondary' }}>
+          <DialogContentText sx={{
+            color: 'text.secondary',
+            fontSize: { xs: '0.85rem', sm: '0.9rem' }
+          }}>
             Si no tienes cuenta, puedes registrarte fácilmente{' '}
             <Link
               href="/register"
@@ -568,14 +857,18 @@ function ListadoMuebles() {
           justifyContent: 'center',
           gap: 2,
           pb: 3,
-          px: 3
+          px: 3,
+          flexDirection: { xs: 'column', sm: 'row' }
         }}>
           <Button
             onClick={handleCloseLoginDialog}
             variant="outlined"
+            fullWidth={isMobile}
             sx={{
               borderColor: '#da6429',
               color: '#da6429',
+              fontSize: { xs: '0.9rem', sm: '1rem' },
+              height: { xs: '44px', sm: '48px' },
               '&:hover': {
                 borderColor: '#c55520',
                 color: '#c55520'
@@ -587,8 +880,11 @@ function ListadoMuebles() {
           <Button
             onClick={handleGoToLogin}
             variant="contained"
+            fullWidth={isMobile}
             sx={{
               backgroundColor: '#da6429',
+              fontSize: { xs: '0.9rem', sm: '1rem' },
+              height: { xs: '44px', sm: '48px' },
               '&:hover': { backgroundColor: '#c55520' },
               px: 4
             }}
@@ -598,24 +894,46 @@ function ListadoMuebles() {
         </DialogActions>
       </Dialog>
 
-      {/* Diálogo de estado de eliminación */}
+      {/* Diálogo de confirmación de eliminación */}
       <Dialog
         open={open}
         keepMounted
         onClose={handleClose}
         aria-describedby="alert-dialog-slide-description"
+        fullWidth
+        maxWidth="sm"
+        sx={{
+          '& .MuiDialog-paper': {
+            margin: { xs: 2, sm: 4 },
+            width: { xs: 'calc(100% - 32px)', sm: 'auto' },
+            maxWidth: { xs: 'calc(100% - 32px)', sm: '600px' }
+          }
+        }}
       >
-        <DialogTitle>Estado de eliminación</DialogTitle>
+        <DialogTitle sx={{ fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
+          Estado de eliminación
+        </DialogTitle>
         <DialogContent>
-          <DialogContentText id="alert-dialog-slide-description">
+          <DialogContentText
+            id="alert-dialog-slide-description"
+            sx={{ fontSize: { xs: '0.9rem', sm: '1rem' } }}
+          >
             {message}
           </DialogContentText>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose}>Cerrar</Button>
+        <DialogActions sx={{ px: { xs: 2, sm: 3 }, pb: { xs: 2, sm: 2 } }}>
+          <Button
+            onClick={handleClose}
+            sx={{
+              fontSize: { xs: '0.9rem', sm: '1rem' },
+              minWidth: { xs: '80px', sm: '100px' }
+            }}
+          >
+            Cerrar
+          </Button>
         </DialogActions>
       </Dialog>
-    </>
+    </Container>
   );
 }
 

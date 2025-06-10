@@ -5,6 +5,8 @@ import { MDBContainer } from "mdb-react-ui-kit";
 import Carrusel from "../components/Carrusel";
 import { useLocation } from "react-router";
 import { AuthListener } from "../hooks/useAuthListener";
+import { requestNotificationPermission } from "../utils/cartNotifications";
+import { useEffect } from "react";
 
 /**
  * Componente principal de la página de inicio.
@@ -12,6 +14,11 @@ import { AuthListener } from "../hooks/useAuthListener";
  */
 function Home() {
   const location = useLocation();
+
+  // Solicitar permisos para notificaciones al cargar la app
+  useEffect(() => {
+    requestNotificationPermission();
+  }, []);
 
   return (
     <>

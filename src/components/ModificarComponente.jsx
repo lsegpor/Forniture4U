@@ -10,6 +10,7 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import { apiUrl } from "../config";
+import useUserStore from "../stores/useUserStore";
 
 // Registrar el idioma español
 registerLocale("es", es);
@@ -34,6 +35,8 @@ function ModificarComponente() {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState("");
+
+  const isEmpresa = useUserStore((state) => state.isEmpresa);
 
   useEffect(() => {
     async function getComponenteById() {
@@ -125,39 +128,72 @@ function ModificarComponente() {
     navigate(-1);
   };
 
-  const customDatePickerStyle = {
-    width: '100%',
-    padding: '16.5px 14px',
-    fontSize: '1rem',
-    borderRadius: '4px',
-    border: '1px solid rgba(0, 0, 0, 0.23)',
-    marginTop: '16px',
-    marginBottom: '8px',
-    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
-    boxSizing: 'border-box'
-  };
+  if (!isEmpresa()) {
+    return (
+      <Container maxWidth="sm" sx={{ px: { xs: 2, sm: 3 } }}>
+        <Typography
+          variant="h6"
+          sx={{
+            textAlign: 'center',
+            mt: 4,
+            px: 2
+          }}
+        >
+          Esta funcionalidad solo está disponible para empresas
+        </Typography>
+      </Container>
+    );
+  }
 
   return (
     <>
-      <Container component="main" maxWidth="sm">
+      <Container
+        component="main"
+        maxWidth="sm"
+        sx={{
+          px: { xs: 1, sm: 2, md: 3 }, // Padding responsive
+          py: { xs: 1, sm: 2 }
+        }}
+      >
         <Paper
           elevation={3}
           sx={{
-            marginTop: 8,
-            marginBottom: 8,
-            padding: 4,
+            marginTop: { xs: 2, sm: 4, md: 8 }, // Margen superior responsive
+            marginBottom: { xs: 2, sm: 4, md: 8 },
+            padding: { xs: 2, sm: 3, md: 4 }, // Padding responsive
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
+            minHeight: { xs: 'auto', sm: 'auto' },
+            width: '100%',
+            maxWidth: '100%'
           }}
         >
 
-          <Typography variant="h4" align="center" sx={{ my: 3, color: "#332f2d" }}>
+          <Typography
+            variant="h4"
+            align="center"
+            sx={{
+              m: { xs: 2, sm: 3, md: 4 }, // Margen responsive
+              color: "#332f2d",
+              fontFamily: '"Georgia", "Times New Roman", serif',
+              fontWeight: 'bold',
+              fontSize: { xs: '1.8rem', sm: '2.2rem', md: '2.5rem' }, // Tamaño de fuente responsive
+              lineHeight: 1.2,
+              px: 1 // Padding horizontal para evitar overflow
+            }}
+          >
             Modificar componente
           </Typography>
 
           <Box
-            component="form" onSubmit={handleSubmit} noValidate sx={{ width: '100%' }}
+            component="form"
+            onSubmit={handleSubmit}
+            noValidate
+            sx={{
+              width: '100%',
+              maxWidth: '100%'
+            }}
           >
             <TextField
               id="nombre"
@@ -168,6 +204,12 @@ function ModificarComponente() {
               onChange={handleChange}
               fullWidth
               margin="normal"
+              size="medium"
+              sx={{
+                '& .MuiInputBase-root': {
+                  fontSize: { xs: '0.9rem', sm: '1rem' }
+                }
+              }}
             />
 
             <TextField
@@ -179,25 +221,47 @@ function ModificarComponente() {
               onChange={handleChange}
               fullWidth
               margin="normal"
+              size="medium"
+              sx={{
+                '& .MuiInputBase-root': {
+                  fontSize: { xs: '0.9rem', sm: '1rem' }
+                }
+              }}
             />
 
-            <div style={{ marginTop: "16px", marginBottom: "8px" }}>
-              <label style={{ color: "rgba(0, 0, 0, 0.6", fontSize: "0.75rem", marginBottom: "4px", display: "block" }}>Fecha de importación</label>
+            <Box sx={{ marginTop: 2, marginBottom: 1 }}>
+              <Typography
+                component="label"
+                sx={{
+                  color: 'rgba(0, 0, 0, 0.6)',
+                  fontSize: { xs: '0.7rem', sm: '0.75rem' },
+                  marginBottom: 1,
+                  display: 'block'
+                }}
+              >
+                Fecha de importación
+              </Typography>
               <DatePicker
-                selected={
-                  datos.fecha_importacion
-                    ? new Date(datos.fecha_importacion)
-                    : null
-                }
+                selected={datos.fecha_importacion ? new Date(datos.fecha_importacion) : null}
                 onChange={handleDateChange}
-                dateFormat="dd/MM/yyyy" // Formato de la fecha
-                placeholderText="Fecha de importación:"
-                className="custom-datepicker"
-                style={customDatePickerStyle}
-                minDate={new Date()} // Deshabilitar fechas pasadas
+                dateFormat="dd/MM/yyyy"
+                placeholderText="Selecciona una fecha"
                 locale="es"
+                className="custom-datepicker"
+                minDate={new Date()} // Deshabilitar fechas pasadas
+                popperProps={{
+                  strategy: "fixed",
+                  modifiers: [
+                    {
+                      name: "preventOverflow",
+                      options: {
+                        boundary: "viewport",
+                      },
+                    },
+                  ],
+                }}
               />
-            </div>
+            </Box>
 
             <TextField
               id="cantidad"
@@ -208,6 +272,12 @@ function ModificarComponente() {
               onChange={handleChange}
               fullWidth
               margin="normal"
+              size="medium"
+              sx={{
+                '& .MuiInputBase-root': {
+                  fontSize: { xs: '0.9rem', sm: '1rem' }
+                }
+              }}
             />
 
             <TextField
@@ -219,6 +289,12 @@ function ModificarComponente() {
               onChange={handleChange}
               fullWidth
               margin="normal"
+              size="medium"
+              sx={{
+                '& .MuiInputBase-root': {
+                  fontSize: { xs: '0.9rem', sm: '1rem' }
+                }
+              }}
             />
 
             <TextField
@@ -232,6 +308,12 @@ function ModificarComponente() {
               multiline
               rows={4}
               margin="normal"
+              size="medium"
+              sx={{
+                '& .MuiInputBase-root': {
+                  fontSize: { xs: '0.9rem', sm: '1rem' }
+                }
+              }}
             />
 
             <Button
@@ -239,11 +321,13 @@ function ModificarComponente() {
               type="submit"
               fullWidth
               sx={{
-                mt: 3,
+                mt: { xs: 2, sm: 3 },
                 mb: 2,
                 backgroundColor: "#da6429",
-                "&:hover": {
-                  backgroundColor: "#c55a24"
+                height: { xs: '48px', sm: '56px' }, // Altura responsive del botón
+                fontSize: { xs: '0.9rem', sm: '1rem' },
+                '&:hover': {
+                  backgroundColor: "#c55a24",
                 }
               }}
             >
@@ -257,12 +341,21 @@ function ModificarComponente() {
       <style>{`
         .custom-datepicker {
           width: 100%;
-          padding: 16.5px 14px;
-          font-size: 1rem;
+          padding: 12px 14px;
+          font-size: 0.9rem;
           border-radius: 4px;
           border: 1px solid rgba(0, 0, 0, 0.23);
           font-family: "Roboto", "Helvetica", "Arial", sans-serif;
           box-sizing: border-box;
+          min-height: 48px;
+        }
+        
+        @media (min-width: 600px) {
+          .custom-datepicker {
+            padding: 16.5px 14px;
+            font-size: 1rem;
+            min-height: 56px;
+          }
         }
         
         .react-datepicker-wrapper {
@@ -271,11 +364,6 @@ function ModificarComponente() {
         }
         
         .react-datepicker__input-container {
-          width: 100%;
-          display: block;
-        }
-        
-        .date-picker-wrapper {
           width: 100%;
           display: block;
         }
@@ -295,40 +383,113 @@ function ModificarComponente() {
           color: white !important;
         }
         
-        /* Aumentar el tamaño del calendario */
+        /* Responsive datepicker */
         .react-datepicker {
-          font-size: 1rem !important;
+          font-size: 0.9rem !important;
+        }
+        
+        @media (min-width: 600px) {
+          .react-datepicker {
+            font-size: 1rem !important;
+          }
         }
         
         .react-datepicker__header {
-          padding-top: 10px !important;
+          padding-top: 8px !important;
+        }
+        
+        @media (min-width: 600px) {
+          .react-datepicker__header {
+            padding-top: 10px !important;
+          }
         }
         
         .react-datepicker__month {
-          margin: 0.4rem !important;
+          margin: 0.3rem !important;
+        }
+        
+        @media (min-width: 600px) {
+          .react-datepicker__month {
+            margin: 0.4rem !important;
+          }
         }
         
         .react-datepicker__day-name, .react-datepicker__day {
-          width: 2rem !important;
-          line-height: 2rem !important;
-          margin: 0.2rem !important;
+          width: 1.8rem !important;
+          line-height: 1.8rem !important;
+          margin: 0.1rem !important;
+          font-size: 0.8rem !important;
+        }
+        
+        @media (min-width: 600px) {
+          .react-datepicker__day-name, .react-datepicker__day {
+            width: 2rem !important;
+            line-height: 2rem !important;
+            margin: 0.2rem !important;
+            font-size: 0.9rem !important;
+          }
+        }
+        
+        /* Mejorar la visibilidad en móviles */
+        .react-datepicker__triangle {
+          display: none !important;
+        }
+        
+        @media (max-width: 599px) {
+          .react-datepicker-popper {
+            transform: none !important;
+            position: fixed !important;
+            top: 50% !important;
+            left: 50% !important;
+            transform: translate(-50%, -50%) !important;
+            z-index: 9999 !important;
+          }
+          
+          .react-datepicker {
+            border: 2px solid #da6429 !important;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3) !important;
+          }
         }
       `}</style>
 
+      {/* Diálogo de confirmación responsive */}
       <Dialog
         open={open}
         keepMounted
         onClose={handleClose}
         aria-describedby="alert-dialog-slide-description"
+        fullWidth
+        maxWidth="sm"
+        sx={{
+          '& .MuiDialog-paper': {
+            margin: { xs: 2, sm: 4 },
+            width: { xs: 'calc(100% - 32px)', sm: 'auto' },
+            maxWidth: { xs: 'calc(100% - 32px)', sm: '600px' }
+          }
+        }}
       >
-        <DialogTitle>Estado de alta</DialogTitle>
+        <DialogTitle sx={{ fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
+          Estado de alta
+        </DialogTitle>
         <DialogContent>
-          <DialogContentText id="alert-dialog-slide-description">
+          <DialogContentText
+            id="alert-dialog-slide-description"
+            sx={{ fontSize: { xs: '0.9rem', sm: '1rem' } }}
+          >
             {message}
           </DialogContentText>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose}>Cerrar</Button>
+        <DialogActions sx={{ px: { xs: 2, sm: 3 }, pb: { xs: 2, sm: 2 } }}>
+          <Button
+            onClick={handleClose}
+            sx={{
+              color: "#da6429",
+              fontSize: { xs: '0.9rem', sm: '1rem' },
+              minWidth: { xs: '80px', sm: '100px' }
+            }}
+          >
+            Cerrar
+          </Button>
         </DialogActions>
       </Dialog>
     </>

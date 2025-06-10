@@ -1,0 +1,118 @@
+/* PerfilUsuario.css */
+
+.perfil-tabs {
+  display: flex;
+  border-bottom: 2px solid #e2d0c6;
+  background-color: #f8f9fa;
+}
+
+.tab-button {
+  flex: 1;
+  background: none;
+  border: none;
+  padding: 15px 20px;
+  font-size: 1.1rem;
+  color: #6c757d;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-bottom: 3px solid transparent;
+}
+
+.tab-button:hover {
+  background-color: #e9ecef;
+  color: #495057;
+}
+
+.tab-button.active {
+  color: #da6429;
+  background-color: white;
+  border-bottom-color: #da6429;
+  font-weight: 600;
+}
+
+.datos-personales,
+.historial-pedidos {
+  padding: 20px 0;
+}
+
+.form-select {
+  height: calc(3.5rem + 2px);
+  padding: 0.375rem 2.25rem 0.375rem 0.75rem;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #212529;
+  background-color: #fff;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m1 6 7 7 7-7'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 16px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 0.25rem;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.form-select:focus {
+  border-color: #da6429;
+  outline: 0;
+  box-shadow: 0 0 0 0.25rem rgba(218, 100, 41, 0.25);
+}
+
+.form-select:disabled {
+  background-color: #e9ecef;
+  opacity: 1;
+}
+
+.form-check-input:checked {
+  background-color: #da6429;
+  border-color: #da6429;
+}
+
+.form-check-input:focus {
+  border-color: #da6429;
+  outline: 0;
+  box-shadow: 0 0 0 0.25rem rgba(218, 100, 41, 0.25);
+}
+
+.badge {
+  font-size: 0.75em;
+  padding: 0.35em 0.65em;
+  border-radius: 0.25rem;
+}
+
+.badge.bg-success {
+  background-color: #198754 !important;
+}
+
+.table th {
+  background-color: #f8f9fa;
+  border-top: none;
+  font-weight: 600;
+  color: #495057;
+}
+
+.table td {
+  vertical-align: middle;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .perfil-tabs {
+    flex-direction: column;
+  }
+
+  .tab-button {
+    border-bottom: 1px solid #dee2e6;
+    border-right: none;
+  }
+
+  .tab-button.active {
+    border-bottom-color: #da6429;
+    border-left: 3px solid #da6429;
+    border-bottom-width: 1px;
+  }
+
+  .table-responsive {
+    font-size: 0.875rem;
+  }
+}

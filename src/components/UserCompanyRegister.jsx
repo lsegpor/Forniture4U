@@ -33,6 +33,8 @@ import PersonIcon from '@mui/icons-material/Person';
 import { useNavigate } from 'react-router';
 import { apiUrl } from '../config';
 import { es } from 'date-fns/locale';
+import useUserStore from "../stores/useUserStore";
+import useCarritoStore from '../stores/useCarritoStore';
 
 registerLocale("es", es);
 
@@ -58,7 +60,7 @@ function UserCompanyRegister() {
         nombre_empresa: "",
         cif_nif_nie: "",
         direccion: "",
-        nombre_personal: null,
+        nombre_personal: "",
         apellidos: "",
         ofertas: true
     });
@@ -68,16 +70,40 @@ function UserCompanyRegister() {
     const [open, setOpen] = useState(false);
     const [message, setMessage] = useState("");
 
+    const { register } = useUserStore();
+    const { getCantidadTotal } = useCarritoStore();
+
+    const isLoggedIn = useUserStore((state) => state.isLoggedIn);
+
     const handleClickOpen = () => {
         setOpen(true);
     };
 
     const handleClose = () => {
         setOpen(false);
-        navigate("/");
+
+        // Solo redirigir si el mensaje indica éxito
+        if (message.includes('¡Bienvenido') || message.includes('Cuenta creada correctamente')) {
+            // Si hay un usuario logueado (registro exitoso con login automático), ir al home
+            if (useUserStore.getState().isLoggedIn()) {
+                navigate("/");
+            } else {
+                // Si no está logueado, ir al login
+                navigate("/login");
+            }
+        }
+        // Si es un mensaje de error, no redirigir
     };
 
     const handleTabChange = (event, newValue) => {
+        if (getCantidadTotal() > 0 && newValue === 1) {
+            // Si hay items en el carrito y quiere cambiar a registro de empresa
+            setErrors({
+                tabError: "No puedes registrarte como empresa si tienes productos en el carrito. Las empresas no pueden realizar pedidos. Por favor, registrate como usuario para completar tu compra."
+            });
+            return; // No cambiar de tab
+        }
+
         setActiveTab(newValue);
         setErrors({}); // Limpiar errores al cambiar de pestaña
     };
@@ -123,6 +149,7 @@ function UserCompanyRegister() {
     };
 
     const validateUserForm = () => {
+        console.log('Validando formulario de usuario...');
         const newErrors = {};
 
         // Validación de email
@@ -181,11 +208,13 @@ function UserCompanyRegister() {
             newErrors.sexo = "Este campo es obligatorio.";
         }
 
+        console.log('Errores de validación usuario:', newErrors);
         setErrors(prev => ({ ...prev, ...newErrors }));
         return Object.keys(newErrors).length === 0;
     };
 
     const validateCompanyForm = () => {
+        console.log('Validando formulario de empresa...');
         const newErrors = {};
 
         // Validación de email
@@ -234,6 +263,7 @@ function UserCompanyRegister() {
             newErrors.apellidos = "Los apellidos son obligatorios.";
         }
 
+        console.log('Errores de validación empresa:', newErrors);
         setErrors(prev => ({ ...prev, ...newErrors }));
         return Object.keys(newErrors).length === 0;
     };
@@ -241,14 +271,36 @@ function UserCompanyRegister() {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        setErrors({});
+
+        console.log('Iniciando proceso de registro...');
+        console.log('Formulario activo:', activeTab === 0 ? 'Usuario' : 'Empresa');
+        console.log('Datos del formulario:', activeTab === 0 ? userFormData : companyFormData);
+
         // Validar según el formulario activo
         const isValid = activeTab === 0
             ? validateUserForm()
             : validateCompanyForm();
 
-        if (!isValid) return;
+        console.log('¿Formulario válido?', isValid);
+        console.log('Errores encontrados:', errors);
 
-        setErrors({});
+        if (!isValid) {
+            console.log('Formulario no válido, mostrando errores...');
+            setTimeout(() => {
+                const firstError = document.querySelector('.Mui-error input, .Mui-error .MuiSelect-select, .react-datepicker__input-container input');
+                if (firstError) {
+                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    firstError.focus();
+                } else {
+                    const dateError = document.querySelector('[style*="color: rgb(211, 47, 47)"]');
+                    if (dateError) {
+                        dateError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }
+            }, 100);
+            return;
+        }
 
         try {
             // Determinar datos y endpoint según pestaña activa
@@ -270,6 +322,9 @@ function UserCompanyRegister() {
                 dataToSend.f_nacimiento = `${year}-${month}-${day}`;
             }
 
+            console.log('Enviando datos:', dataToSend);
+            console.log('Endpoint:', `${apiUrl}${endpoint}`);
+
             const response = await fetch(`${apiUrl}${endpoint}`, {
                 method: 'POST',
                 headers: {
@@ -278,10 +333,24 @@ function UserCompanyRegister() {
                 body: JSON.stringify(dataToSend)
             });
 
+            console.log('Respuesta recibida:', response.status);
+
             const data = await response.json();
+            console.log('Datos de respuesta:', data);
 
             if (response.ok && data.ok) {
-                setMessage(`Cuenta creada correctamente. Redirigiendo al login.`);
+                if (data.datos && data.token) {
+                    register(data.datos, data.token);
+                    const itemsEnCarrito = getCantidadTotal();
+                    if (itemsEnCarrito > 0) {
+                        setMessage(`¡Bienvenido${activeTab === 0 ? '' : ' a nuestra plataforma'}! Tu cuenta ha sido creada correctamente y tu carrito con ${itemsEnCarrito} artículo${itemsEnCarrito > 1 ? 's' : ''} se ha mantenido. ¡Ahora puedes finalizar tu compra!`);
+                    } else {
+                        setMessage(`¡Bienvenido${activeTab === 0 ? '' : ' a nuestra plataforma'}! Tu cuenta ha sido creada correctamente. Ya puedes empezar a comprar.`);
+                    }
+                } else {
+                    setMessage(`Cuenta creada correctamente. Te hemos enviado un email de confirmación. Ahora puedes iniciar sesión.`);
+                }
+
                 // Resetear el formulario
                 if (activeTab === 0) {
                     setUserFormData({
@@ -309,18 +378,27 @@ function UserCompanyRegister() {
                     });
                 }
 
+                handleClickOpen();
+
                 // Redirigir después de un breve retraso
                 setTimeout(() => {
-                    navigate('/login');
+                    if (data.datos && data.token) {
+                        // Si se logueó automáticamente, ir al home
+                        navigate('/');
+                    } else {
+                        // Si no, ir al login
+                        navigate('/login');
+                    }
                 }, 2000);
             } else {
+                console.error('Error del servidor:', data);
                 setMessage(`Error al crear la cuenta.`);
                 // Mostrar mensaje de error
                 setErrors({
                     apiError: data.mensaje || `Error al registrar ${activeTab === 0 ? 'usuario' : 'empresa'}.`
                 });
+                handleClickOpen();
             }
-            handleClickOpen();
         } catch (error) {
             console.error('Error en registro:', error);
             setErrors({
@@ -340,6 +418,10 @@ function UserCompanyRegister() {
         fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
         boxSizing: 'border-box'
     };
+
+    if (isLoggedIn()) {
+        return <Typography variant="h6">Esta funcionalidad solo está disponible para usuarios no loggeados</Typography>;
+    }
 
     return (
         <>
@@ -362,6 +444,14 @@ function UserCompanyRegister() {
                     <Typography component="h1" variant="h5" sx={{ mb: 2 }}>
                         Registro
                     </Typography>
+
+                    {/* Mostrar información sobre el carrito si hay items */}
+                    {getCantidadTotal() > 0 && (
+                        <Alert severity="info" sx={{ width: '100%', mb: 2 }}>
+                            🛒 Tienes {getCantidadTotal()} artículo{getCantidadTotal() > 1 ? 's' : ''} en tu carrito.
+                            Se mantendrá después del registro.
+                        </Alert>
+                    )}
 
                     {/* Pestañas para elegir entre usuario y empresa */}
                     <Tabs
@@ -401,7 +491,13 @@ function UserCompanyRegister() {
                                     color: '#da6429',
                                 },
                                 mx: 3,
+                                opacity: getCantidadTotal() > 0 ? 0.5 : 1,
+                                cursor: getCantidadTotal() > 0 ? 'not-allowed' : 'pointer',
+                                '&:hover': {
+                                    backgroundColor: getCantidadTotal() > 0 ? 'transparent' : 'rgba(0, 0, 0, 0.04)',
+                                }
                             }}
+                            title={getCantidadTotal() > 0 ? "No puedes registrarte como empresa si tienes productos en el carrito" : ""}
                         />
                     </Tabs>
 
@@ -461,82 +557,107 @@ function UserCompanyRegister() {
                                 </Grid>
 
                                 <Grid item xs={12} sm={6}>
-                                    <DatePicker
-                                        label="Fecha de nacimiento"
-                                        placeholderText='Fecha de nacimiento'
-                                        locale="es"
-                                        dateFormat="dd/MM/yyyy"
-                                        className="border rounded-lg py-2 px-3 w-100"
-                                        calendarClassName="custom-calendar"
-                                        selected={userFormData.f_nacimiento ? new Date(userFormData.f_nacimiento) : null}
-                                        onChange={handleDateChange}
-                                        style={customDatePickerStyle}
-                                        dayClassName={(date) =>
-                                            userFormData.f_nacimiento === date.toISOString().split("T")[0]
-                                                ? "selected-day"
-                                                : "day"
-                                        }
-                                    />
-                                    <style>{`
-        .custom-datepicker {
-          width: 100%;
-          padding: 16.5px 14px;
-          font-size: 1rem;
-          border-radius: 4px;
-          border: 1px solid rgba(0, 0, 0, 0.23);
-          font-family: "Roboto", "Helvetica", "Arial", sans-serif;
-          box-sizing: border-box;
-        }
-        
-        .react-datepicker-wrapper {
-          width: 100%;
-          display: block;
-        }
-        
-        .react-datepicker__input-container {
-          width: 100%;
-          display: block;
-        }
-        
-        .date-picker-wrapper {
-          width: 100%;
-          display: block;
-        }
-        
-        .custom-datepicker:focus {
-          border: 2px solid #da6429;
-          outline: none;
-        }
-        
-        .react-datepicker__day--selected {
-          background-color: #da6429 !important;
-          color: white !important;
-        }
-        
-        .react-datepicker__day:hover {
-          background-color: #f0814f !important;
-          color: white !important;
-        }
-        
-        /* Aumentar el tamaño del calendario */
-        .react-datepicker {
-          font-size: 1rem !important;
-        }
-        
-        .react-datepicker__header {
-          padding-top: 10px !important;
-        }
-        
-        .react-datepicker__month {
-          margin: 0.4rem !important;
-        }
-        
-        .react-datepicker__day-name, .react-datepicker__day {
-          width: 2rem !important;
-          line-height: 2rem !important;
-          margin: 0.2rem !important;
-        }
-      `}</style>
+                                    <Box>
+                                        <Typography variant="body2" sx={{ mb: 1, color: errors.f_nacimiento ? '#d32f2f' : 'rgba(0, 0, 0, 0.6)' }}>
+                                            Fecha de nacimiento *
+                                        </Typography>
+
+                                        <DatePicker
+                                            label="Fecha de nacimiento"
+                                            locale="es"
+                                            dateFormat="dd/MM/yyyy"
+                                            className="border rounded-lg py-2 px-3 w-100"
+                                            calendarClassName="custom-calendar"
+                                            selected={userFormData.f_nacimiento ? new Date(userFormData.f_nacimiento) : null}
+                                            onChange={handleDateChange}
+                                            style={{
+                                                ...customDatePickerStyle,
+                                                borderColor: errors.f_nacimiento ? '#d32f2f' : 'rgba(0, 0, 0, 0.23)',
+                                                borderWidth: errors.f_nacimiento ? '2px' : '1px'
+                                            }}
+                                            dayClassName={(date) =>
+                                                userFormData.f_nacimiento === date.toISOString().split("T")[0]
+                                                    ? "selected-day"
+                                                    : "day"
+                                            }
+                                        />
+
+                                        {errors.f_nacimiento && (
+                                            <Typography
+                                                variant="caption"
+                                                sx={{
+                                                    color: '#d32f2f',
+                                                    mt: 0.5,
+                                                    display: 'block',
+                                                    fontSize: '0.75rem',
+                                                    lineHeight: 1.66
+                                                }}
+                                            >
+                                                {errors.f_nacimiento}
+                                            </Typography>
+                                        )}
+
+                                        <style>{`
+                                            .custom-datepicker {
+                                            width: 100%;
+                                            padding: 16.5px 14px;
+                                            font-size: 1rem;
+                                            border-radius: 4px;
+                                            border: 1px solid rgba(0, 0, 0, 0.23);
+                                            font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+                                            box-sizing: border-box;
+                                            }
+                                            
+                                            .react-datepicker-wrapper {
+                                            width: 100%;
+                                            display: block;
+                                            }
+                                            
+                                            .react-datepicker__input-container {
+                                            width: 100%;
+                                            display: block;
+                                            }
+                                            
+                                            .date-picker-wrapper {
+                                            width: 100%;
+                                            display: block;
+                                            }
+                                            
+                                            .custom-datepicker:focus {
+                                            border: 2px solid #da6429;
+                                            outline: none;
+                                            }
+                                            
+                                            .react-datepicker__day--selected {
+                                            background-color: #da6429 !important;
+                                            color: white !important;
+                                            }
+                                            
+                                            .react-datepicker__day:hover {
+                                            background-color: #f0814f !important;
+                                            color: white !important;
+                                            }
+                                            
+                                            /* Aumentar el tamaño del calendario */
+                                            .react-datepicker {
+                                            font-size: 1rem !important;
+                                            }
+                                            
+                                            .react-datepicker__header {
+                                            padding-top: 10px !important;
+                                            }
+                                            
+                                            .react-datepicker__month {
+                                            margin: 0.4rem !important;
+                                            }
+                                            
+                                            .react-datepicker__day-name, .react-datepicker__day {
+                                            width: 2rem !important;
+                                            line-height: 2rem !important;
+                                            margin: 0.2rem !important;
+                                            }
+                                        `}</style>
+                                    </Box>
                                 </Grid>
 
                                 <Grid item xs={12} sm={6}>
@@ -613,9 +734,9 @@ function UserCompanyRegister() {
                                         control={
                                             <Checkbox
                                                 name="ofertas"
-                                                color="primary"
                                                 checked={userFormData.ofertas}
                                                 onChange={handleUserChange}
+                                                sx={{ color: '#259bd6' }}
                                             />
                                         }
                                         label="Deseo recibir ofertas y novedades por correo"
@@ -770,9 +891,9 @@ function UserCompanyRegister() {
                                         control={
                                             <Checkbox
                                                 name="ofertas"
-                                                color="primary"
                                                 checked={companyFormData.ofertas}
                                                 onChange={handleCompanyChange}
+                                                sx={{ color: '#259bd6' }}
                                             />
                                         }
                                         label="Deseo recibir ofertas y novedades por correo"
@@ -813,24 +934,56 @@ function UserCompanyRegister() {
                 </Paper>
             </Container>
 
-            <Dialog
-                open={open}
-                keepMounted
-                onClose={handleClose}
-                aria-describedby="alert-dialog-slide-description"
-            >
-                <DialogTitle>Estado de alta</DialogTitle>
-                <DialogContent>
-                    <DialogContentText id="alert-dialog-slide-description">
+            <Dialog open={open} keepMounted onClose={handleClose} maxWidth="sm" fullWidth>
+                <DialogTitle sx={{
+                    textAlign: 'center',
+                    color: message.includes('Error') ? '#d32f2f' : '#da6429',
+                    fontWeight: 'bold',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 1
+                }}>
+                    {message.includes('Error') ? '❌ Error' : '✅ ¡Registro Exitoso!'}
+                </DialogTitle>
+                <DialogContent sx={{ textAlign: 'center', py: 3 }}>
+                    <DialogContentText sx={{
+                        fontSize: '1.1rem',
+                        whiteSpace: 'pre-line',
+                        color: '#259bd6'
+                    }}>
                         {message}
                     </DialogContentText>
+
+                    {message.includes('¡Bienvenido') && getCantidadTotal() > 0 && (
+                        <Box sx={{
+                            mt: 2,
+                            p: 2,
+                            bgcolor: '#e8f5e8',
+                            borderRadius: 1,
+                            border: '1px solid #4caf50'
+                        }}>
+                            <Typography variant="body2" color="success.main" fontWeight="bold">
+                                🛒 Tu carrito está listo para el checkout
+                            </Typography>
+                        </Box>
+                    )}
                 </DialogContent>
-                <DialogActions>
+                <DialogActions sx={{ justifyContent: 'center', pb: 3 }}>
                     <Button
                         onClick={handleClose}
-                        sx={{ color: "#da6429" }}
+                        variant="contained"
+                        sx={{
+                            bgcolor: message.includes('Error') ? '#d32f2f' : '#da6429',
+                            '&:hover': {
+                                bgcolor: message.includes('Error') ? '#b71c1c' : '#c55520'
+                            },
+                            px: 4
+                        }}
                     >
-                        Cerrar
+                        {message.includes('Error') ? 'Entendido' : (
+                            useUserStore.getState().isLoggedIn() ? 'Ir al Inicio' : 'Ir al Login'
+                        )}
                     </Button>
                 </DialogActions>
             </Dialog>

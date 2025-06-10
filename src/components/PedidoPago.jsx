@@ -80,6 +80,8 @@ function PedidoPago() {
         nombreTitular: ''
     });
 
+    const isEmpresa = useUserStore((state) => state.isEmpresa);
+
     // Redireccionar si el carrito está vacío o no está logueado
     useEffect(() => {
         if (items.length === 0 && !openDialog) {
@@ -293,6 +295,10 @@ function PedidoPago() {
         return null; // El useEffect ya redirigirá
     }
 
+    if (isEmpresa()) {
+        return <Typography variant="h6">Esta funcionalidad solo está disponible para usuarios</Typography>;
+    }
+
     return (
         <Box sx={{ maxWidth: 1200, mx: 'auto', p: 3 }}>
             {/* Header */}
@@ -300,7 +306,16 @@ function PedidoPago() {
                 <IconButton onClick={() => navigate(-1)} sx={{ mr: 2 }}>
                     <ArrowBackIcon />
                 </IconButton>
-                <Typography variant="h4" sx={{ color: "#332f2d", fontWeight: 'bold' }}>
+                <Typography
+                    variant="h4"
+                    align="center"
+                    sx={{
+                        m: 4,
+                        color: "#332f2d",
+                        fontFamily: '"Georgia", "Times New Roman", serif',
+                        fontWeight: 'bold'
+                    }}
+                >
                     Finalizar Pedido
                 </Typography>
             </Box>

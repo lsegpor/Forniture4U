@@ -12,17 +12,19 @@ import ModificarMueble from "./components/ModificarMueble";
 import ListadoComponentesMateriales from "./components/ListadoComponentesMateriales";
 import BuscarComponente from "./components/BuscarComponente";
 import BuscarMueble from "./components/BuscarMueble";
-import ListadoMueblesFecha from "./components/ListadoMueblesFecha";
+import ListadoAvanzadoMuebles from "./components/ListadoAvanzadoMuebles";
 import MuebleComponentesChart from "./components/MuebleComponentesChart";
 import UserCompanyLogin from "./components/UserCompanyLogin";
 import UserCompanyRegister from "./components/UserCompanyRegister";
 import DetalleMueble from "./components/DetalleMueble";
 import PedidoPago from "./components/PedidoPago";
+import PerfilUsuario from "./components/PerfilUsuario";
+import PerfilEmpresa from "./components/PerfilEmpresa";
 
-import "@fontsource/roboto/300.css";
-import "@fontsource/roboto/400.css";
-import "@fontsource/roboto/500.css";
-import "@fontsource/roboto/700.css";
+//import "@fontsource/roboto/300.css";
+//import "@fontsource/roboto/400.css";
+//import "@fontsource/roboto/500.css";
+//import "@fontsource/roboto/700.css";
 import "mdb-react-ui-kit/dist/css/mdb.min.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 
@@ -81,8 +83,8 @@ let router = createBrowserRouter([
         element: <BuscarMueble />,
       },
       {
-        path: "listadomueblesfecha",
-        element: <ListadoMueblesFecha />,
+        path: "listadoavanzadomuebles",
+        element: <ListadoAvanzadoMuebles />,
       },
       {
         path: "grafica",
@@ -103,6 +105,14 @@ let router = createBrowserRouter([
       {
         path: "checkout",
         element: <PedidoPago />,
+      },
+      {
+        path: "perfilusuario",
+        element: <PerfilUsuario />,
+      },
+      {
+        path: "perfilempresa",
+        element: <PerfilEmpresa />,
       },
     ],
   },

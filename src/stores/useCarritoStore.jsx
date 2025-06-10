@@ -1,4 +1,5 @@
-import { create } from 'zustand'
+import { create } from 'zustand';
+import { apiUrl } from '../config';
 
 // Sistema de carritos múltiples - cada usuario tiene su propio carrito
 const useCarritoStore = create((set, get) => ({
@@ -95,14 +96,200 @@ const useCarritoStore = create((set, get) => ({
 
     // Función para manejar cambios de autenticación
     handleAuthChange: (isAuthenticated, userData = null) => {
-        const nuevoUserId = isAuthenticated ? (userData?.id_usuario || userData?.id) : null;
+        const nuevoUserId = isAuthenticated ? (userData?.id_usuario || userData?.id_empresa || userData?.id) : null;
 
         if (!get().initialized) {
             get().initialize();
         }
 
-        // Cambiar al carrito correspondiente
         get().cambiarCarrito(nuevoUserId);
+    },
+
+    handleRegister: (userData) => {
+        const nuevoUserId = userData?.id_usuario || userData?.id_empresa || userData?.id;
+
+        if (!nuevoUserId) {
+            console.error('No se pudo obtener el ID del usuario registrado');
+            return;
+        }
+
+        console.log('Manejando registro de nuevo usuario:', nuevoUserId);
+
+        if (!get().initialized) {
+            get().initialize();
+        }
+
+        // Para registro: SIEMPRE transferir carrito anónimo
+        get().transferirCarritoAnonimo(nuevoUserId, 'registro');
+    },
+
+    handleLogin: (userData) => {
+        const nuevoUserId = userData?.id_usuario || userData?.id_empresa || userData?.id;
+
+        if (!nuevoUserId) {
+            console.error('No se pudo obtener el ID del usuario logueado');
+            return;
+        }
+
+        console.log('Manejando login de usuario existente:', nuevoUserId);
+
+        if (!get().initialized) {
+            get().initialize();
+        }
+
+        // Para login: combinar carritos si hay items en el anónimo
+        const { items, userId } = get();
+
+        if (userId === null && items.length > 0) {
+            // Hay carrito anónimo con items, combinar con carrito del usuario
+            get().combinarCarritos(nuevoUserId);
+        } else {
+            // No hay carrito anónimo o está vacío, cambio normal
+            get().cambiarCarrito(nuevoUserId);
+        }
+    },
+
+    combinarCarritos: (userId) => {
+        const { items: itemsAnonimos } = get();
+
+        console.log('Combinando carritos - Items anónimos:', itemsAnonimos.length);
+
+        // Cargar carrito del usuario existente
+        const carritoUsuario = get().cargarCarrito(userId);
+
+        console.log('Carrito usuario existente:', carritoUsuario.items.length, 'items');
+
+        if (carritoUsuario.items.length === 0) {
+            // Si el usuario no tiene carrito, transferir directamente
+            console.log('Usuario no tiene carrito, transfiriendo carrito anónimo');
+            get().transferirCarritoAnonimo(userId, 'login');
+            return;
+        }
+
+        // Combinar los carritos
+        const itemsCombinados = [...carritoUsuario.items];
+        let itemsAgregados = 0;
+        let itemsCombinados_count = 0;
+
+        itemsAnonimos.forEach(itemAnonimo => {
+            const itemExistente = itemsCombinados.find(
+                item => item.id_producto === itemAnonimo.id_producto &&
+                    item.tipo_producto === itemAnonimo.tipo_producto
+            );
+
+            if (itemExistente) {
+                // Si existe, sumar cantidades
+                itemExistente.cantidad += itemAnonimo.cantidad;
+                itemsCombinados_count++;
+                console.log(`Combinado: ${itemAnonimo.nombre} (${itemAnonimo.cantidad} + ${itemExistente.cantidad - itemAnonimo.cantidad})`);
+            } else {
+                // Si no existe, agregar el item
+                itemsCombinados.push(itemAnonimo);
+                itemsAgregados++;
+                console.log(`Agregado: ${itemAnonimo.nombre} (${itemAnonimo.cantidad})`);
+            }
+        });
+
+        // Calcular nuevo total
+        const nuevoTotal = itemsCombinados.reduce((sum, item) => {
+            return sum + (item.precio * item.cantidad);
+        }, 0);
+
+        // Guardar carrito combinado
+        const keyUsuario = get().getStorageKey(userId);
+        localStorage.setItem(keyUsuario, JSON.stringify({
+            items: itemsCombinados,
+            total: nuevoTotal
+        }));
+
+        // Actualizar estado del store
+        set({
+            items: itemsCombinados,
+            total: nuevoTotal,
+            userId: userId
+        });
+
+        // Limpiar carrito anónimo
+        localStorage.removeItem(get().getStorageKey(null));
+
+        console.log(`Carritos combinados exitosamente:
+        - Items agregados: ${itemsAgregados}
+        - Items combinados: ${itemsCombinados_count}
+        - Total items final: ${itemsCombinados.length}
+        - Total: €${nuevoTotal.toFixed(2)}`);
+
+        // Mostrar notificación de éxito
+        if (typeof window !== 'undefined' && window.showCartCombineNotification) {
+            window.showCartCombineNotification(itemsAgregados, itemsCombinados_count);
+        } else if (typeof window !== 'undefined' && window.showCartTransferNotification) {
+            window.showCartTransferNotification(itemsAnonimos.length, true);
+        }
+    },
+
+    // Función para transferir carrito anónimo a usuario registrado
+    transferirCarritoAnonimo: (nuevoUserId, tipoAccion = "login") => {
+        const { items, total, userId } = get();
+
+        // Solo transferir si hay items en el carrito anónimo y se está logueando
+        if (userId === null && items.length > 0 && nuevoUserId) {
+            console.log('Transfiriendo carrito anónimo a usuario:', nuevoUserId);
+            console.log('Items a transferir:', items.length);
+
+            // Guardar el carrito actual (anónimo) en el nuevo usuario
+            const carritoAnonimo = { items, total };
+            const keyNuevoUsuario = get().getStorageKey(nuevoUserId);
+
+            try {
+                if (tipoAccion === 'registro') {
+                    // Para registro: transferir directamente sin verificar carrito existente
+                    localStorage.setItem(keyNuevoUsuario, JSON.stringify(carritoAnonimo));
+
+                    set({
+                        items,
+                        total,
+                        userId: nuevoUserId
+                    });
+
+                    console.log('Carrito transferido directamente al nuevo usuario registrado');
+                } else {
+                    // Para login: verificar si hay carrito existente y combinar
+                    const carritoExistente = get().cargarCarrito(nuevoUserId);
+
+                    if (carritoExistente.items.length > 0) {
+                        // Ya manejado en combinarCarritos()
+                        console.log('Combinando con carrito existente...');
+                        return;
+                    } else {
+                        // No tiene carrito, transferir directamente
+                        localStorage.setItem(keyNuevoUsuario, JSON.stringify(carritoAnonimo));
+
+                        set({
+                            items,
+                            total,
+                            userId: nuevoUserId
+                        });
+
+                        console.log('Carrito transferido al usuario (sin carrito previo)');
+                    }
+                }
+
+                // Limpiar carrito anónimo
+                localStorage.removeItem(get().getStorageKey(null));
+
+                // Mostrar notificación de éxito
+                if (typeof window !== 'undefined' && window.showCartTransferNotification) {
+                    window.showCartTransferNotification(items.length, tipoAccion === 'registro');
+                }
+
+            } catch (error) {
+                console.error('Error transfiriendo carrito:', error);
+                // En caso de error, al menos cambiar al usuario
+                get().cambiarCarrito(nuevoUserId);
+            }
+        } else {
+            // Si no hay carrito anónimo o no hay items, cambio normal
+            get().cambiarCarrito(nuevoUserId);
+        }
     },
 
     // Función para hacer logout - cambiar a carrito anónimo
@@ -114,14 +301,40 @@ const useCarritoStore = create((set, get) => ({
     // Función para obtener los componentes de un mueble desde la API
     obtenerComponentesMueble: async (id_mueble) => {
         try {
-            const response = await fetch(`/api/muebles/${id_mueble}/componentes`);
+            const response = await fetch(apiUrl + `/mueble/${id_mueble}/componentes`);
             if (!response.ok) {
-                throw new Error('Error al obtener componentes del mueble');
+                // Si es 404, significa que la ruta no existe aún
+                if (response.status === 404) {
+                    throw new Error('El endpoint de componentes del mueble no está disponible aún');
+                }
+                throw new Error(`Error HTTP: ${response.status}`);
             }
-            const componentes = await response.json();
-            return componentes; // Array de { id_componente, cantidad, nombre, precio, stock_disponible }
+
+            // Verificar que la respuesta sea JSON
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                throw new Error('La respuesta no es JSON válido. Verifica que el endpoint esté configurado correctamente.');
+            }
+
+            const result = await response.json();
+
+            // Tu API devuelve la estructura: { ok: true, datos: { componentes: [...], mueble: {...} }, mensaje: "..." }
+            if (result.ok && result.datos && result.datos.componentes) {
+                return result.datos.componentes; // Array de { id_componente, cantidad, nombre, precio, stock_disponible }
+            } else if (result.success && result.data && result.data.componentes) {
+                // Formato alternativo de respuesta
+                return result.data.componentes;
+            } else {
+                throw new Error(result.mensaje || result.message || 'Error al obtener componentes del mueble');
+            }
         } catch (error) {
             console.error('Error obteniendo componentes del mueble:', error);
+
+            // Si el error es de parsing JSON, es probable que el endpoint no exista
+            if (error instanceof SyntaxError && error.message.includes('Unexpected token')) {
+                throw new Error('El endpoint para obtener componentes del mueble no está configurado. Por favor, contacta al administrador.');
+            }
+
             throw error;
         }
     },
@@ -168,6 +381,12 @@ const useCarritoStore = create((set, get) => ({
             return { valido: true, componentes: componentesNecesarios };
         } catch (error) {
             console.error('Error validando stock del mueble:', error);
+
+            // Si el error es por endpoint no configurado, mostrar un mensaje más amigable
+            if (error.message.includes('endpoint') || error.message.includes('no está configurado')) {
+                throw new Error('Funcionalidad de muebles en desarrollo. Próximamente disponible.');
+            }
+
             throw error;
         }
     },

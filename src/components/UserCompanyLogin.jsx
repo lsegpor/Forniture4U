@@ -26,6 +26,8 @@ function UserCompanyLogin() {
   const navigate = useNavigate();
   const login = useUserStore(state => state.login);
 
+  const isLoggedIn = useUserStore(state => state.isLoggedIn);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
@@ -136,15 +138,33 @@ function UserCompanyLogin() {
 
   // Función auxiliar para extraer token de la respuesta
   const extractTokenFromResponse = (responseData) => {
+    console.log('Buscando token en response:', responseData);
+
     // Buscar token en diferentes ubicaciones posibles
-    if (responseData.token) return responseData.token;
-    if (responseData.accessToken) return responseData.accessToken;
-    if (responseData.authToken) return responseData.authToken;
-    if (responseData.datos?.token) return responseData.datos.token;
+    if (responseData.token) {
+      console.log('Token encontrado en responseData.token');
+      return responseData.token;
+    }
+    if (responseData.accessToken) {
+      console.log('Token encontrado en responseData.accessToken');
+      return responseData.accessToken;
+    }
+    if (responseData.authToken) {
+      console.log('Token encontrado en responseData.authToken');
+      return responseData.authToken;
+    }
+    if (responseData.datos?.token) {
+      console.log('Token encontrado en responseData.datos.token');
+      return responseData.datos.token;
+    }
 
     console.warn('No se encontró token en la respuesta:', responseData);
     return null;
   };
+
+  if (isLoggedIn()) {
+    return <Typography variant="h6">Esta funcionalidad solo está disponible para usuarios no loggeados</Typography>;
+  }
 
   return (
     <>

@@ -305,42 +305,71 @@ function AltaMueble() {
     );
   }
 
-  const customDatePickerStyle = {
-    width: '100%',
-    padding: '16.5px 14px',
-    fontSize: '1rem',
-    borderRadius: '4px',
-    border: '1px solid rgba(0, 0, 0, 0.23)',
-    marginTop: '16px',
-    marginBottom: '8px',
-    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
-    boxSizing: 'border-box'
-  };
-
   if (!isEmpresa()) {
-    return <Typography variant="h6">Esta funcionalidad solo está disponible para empresas</Typography>;
+    return (
+      <Container maxWidth="sm" sx={{ px: { xs: 2, sm: 3 } }}>
+        <Typography
+          variant="h6"
+          sx={{
+            textAlign: 'center',
+            mt: 4,
+            px: 2
+          }}
+        >
+          Esta funcionalidad solo está disponible para empresas
+        </Typography>
+      </Container>
+    );
   }
 
   return (
     <>
-      <Container component="main" maxWidth="sm">
+      <Container
+        component="main"
+        maxWidth="md"
+        sx={{
+          px: { xs: 1, sm: 2, md: 3 },
+          py: { xs: 1, sm: 2 }
+        }}
+      >
         <Paper
           elevation={3}
           sx={{
-            marginTop: 8,
-            marginBottom: 8,
-            padding: 4,
+            marginTop: { xs: 2, sm: 4, md: 8 },
+            marginBottom: { xs: 2, sm: 4, md: 8 },
+            padding: { xs: 2, sm: 3, md: 4 },
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
+            width: '100%',
+            maxWidth: '100%'
           }}
         >
-
-          <Typography variant="h4" align="center" sx={{ my: 3, color: "#332f2d" }}>
+          <Typography
+            variant="h4"
+            align="center"
+            sx={{
+              m: { xs: 2, sm: 3, md: 4 },
+              color: "#332f2d",
+              fontFamily: '"Georgia", "Times New Roman", serif',
+              fontWeight: 'bold',
+              fontSize: { xs: '1.8rem', sm: '2.2rem', md: '2.5rem' },
+              lineHeight: 1.2,
+              px: 1
+            }}
+          >
             Alta de mueble
           </Typography>
 
-          <Box component="form" onSubmit={handleSubmit} noValidate sx={{ width: '100%' }}>
+          <Box
+            component="form"
+            onSubmit={handleSubmit}
+            noValidate
+            sx={{
+              width: '100%',
+              maxWidth: '100%'
+            }}
+          >
             <TextField
               id="nombre"
               label="Nombre"
@@ -351,6 +380,12 @@ function AltaMueble() {
               margin="normal"
               fullWidth
               required
+              size="medium"
+              sx={{
+                '& .MuiInputBase-root': {
+                  fontSize: { xs: '0.9rem', sm: '1rem' }
+                }
+              }}
             />
 
             <TextField
@@ -363,6 +398,12 @@ function AltaMueble() {
               margin="normal"
               fullWidth
               required
+              size="medium"
+              sx={{
+                '& .MuiInputBase-root': {
+                  fontSize: { xs: '0.9rem', sm: '1rem' }
+                }
+              }}
             />
 
             <TextField
@@ -377,32 +418,56 @@ function AltaMueble() {
               rows={4}
               fullWidth
               required
+              size="medium"
+              sx={{
+                '& .MuiInputBase-root': {
+                  fontSize: { xs: '0.9rem', sm: '1rem' }
+                }
+              }}
             />
 
-            <div style={{ marginTop: '16px', marginBottom: '8px' }}>
-              <label style={{ color: 'rgba(0, 0, 0, 0.6)', fontSize: '0.75rem', marginBottom: '4px', display: 'block' }}>
+            <Box sx={{ marginTop: 2, marginBottom: 1 }}>
+              <Typography
+                component="label"
+                sx={{
+                  color: 'rgba(0, 0, 0, 0.6)',
+                  fontSize: { xs: '0.7rem', sm: '0.75rem' },
+                  marginBottom: 1,
+                  display: 'block'
+                }}
+              >
                 Fecha de entrega
-              </label>
+              </Typography>
               <DatePicker
                 selected={
                   datos.fecha_entrega ? new Date(datos.fecha_entrega) : null
                 }
                 onChange={handleDateChange}
-                dateFormat="dd/MM/yyyy" // Formato de la fecha
+                dateFormat="dd/MM/yyyy"
                 placeholderText="Fecha de entrega:"
                 className="custom-datepicker"
-                style={customDatePickerStyle}
                 locale="es"
-                minDate={new Date()} // No permitir fechas pasadas
+                minDate={new Date()}
+                popperProps={{
+                  strategy: "fixed",
+                  modifiers: [
+                    {
+                      name: "preventOverflow",
+                      options: {
+                        boundary: "viewport",
+                      },
+                    },
+                  ],
+                }}
               />
-            </div>
+            </Box>
 
-            <Box sx={{ my: 2 }}>
+            <Box sx={{ my: { xs: 2, sm: 3 } }}>
               <MDBSwitch
                 id="flexSwitchCheckDefault"
                 label="¿El mueble requiere de montaje?"
                 name="requiere_montar"
-                onChange={(e) => handleChange(e)} // Actualiza el estado de en_stock
+                onChange={(e) => handleChange(e)}
                 checked={
                   datos.requiere_montar === "true" ||
                   datos.requiere_montar === true
@@ -414,10 +479,13 @@ function AltaMueble() {
               component="label"
               variant="contained"
               startIcon={<CloudUploadIcon />}
+              fullWidth
               sx={{
-                mt: 3,
+                mt: { xs: 2, sm: 3 },
                 mb: 2,
                 backgroundColor: "#da6429",
+                height: { xs: '48px', sm: '56px' },
+                fontSize: { xs: '0.9rem', sm: '1rem' },
                 '&:hover': {
                   backgroundColor: "#c55a24",
                 }
@@ -428,58 +496,97 @@ function AltaMueble() {
             </Button>
 
             {imagenPreview ? (
-              <Box sx={{ mt: 2, mb: 2 }}>
-                <Typography variant="subtitle1" gutterBottom>
+              <Box sx={{ mt: 2, mb: 2, textAlign: 'center' }}>
+                <Typography
+                  variant="subtitle1"
+                  gutterBottom
+                  sx={{ fontSize: { xs: '0.9rem', sm: '1rem' } }}
+                >
                   Vista previa:
                 </Typography>
-                <img
-                  src={imagenPreview}
-                  alt="Vista previa"
-                  style={{ maxWidth: '200px', maxHeight: '200px', objectFit: 'contain' }}
-                />
-
-                <Box sx={{ mt: 2 }}>
-                  <Button
-                    component="label"
-                    variant="contained"
-                    onClick={() => {
-                      setImagen(null);
-                      setImagenPreview('');
+                <Box sx={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  mb: 2
+                }}>
+                  <img
+                    src={imagenPreview}
+                    alt="Vista previa"
+                    style={{
+                      maxWidth: '100%',
+                      maxHeight: '200px',
+                      objectFit: 'contain',
+                      borderRadius: '8px',
+                      border: '1px solid rgba(0,0,0,0.1)'
                     }}
-                    sx={{
-                      mt: 3,
-                      mb: 2,
-                      backgroundColor: "#da6429",
-                      '&:hover': {
-                        backgroundColor: "#c55a24",
-                      }
-                    }}
-                  >
-                    Eliminar imagen
-                  </Button>
+                  />
                 </Box>
+
+                <Button
+                  variant="contained"
+                  onClick={() => {
+                    setImagen(null);
+                    setImagenPreview('');
+                  }}
+                  fullWidth
+                  sx={{
+                    backgroundColor: "#da6429",
+                    height: { xs: '40px', sm: '48px' },
+                    fontSize: { xs: '0.85rem', sm: '0.95rem' },
+                    '&:hover': {
+                      backgroundColor: "#c55a24",
+                    }
+                  }}
+                >
+                  Eliminar imagen
+                </Button>
               </Box>
             ) : (
-              <Box sx={{ mt: 2, mb: 2 }}>
-                <Typography variant="subtitle1" gutterBottom>
+              <Box sx={{ mt: 2, mb: 2, textAlign: 'center' }}>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ fontSize: { xs: '0.85rem', sm: '0.9rem' } }}
+                >
                   Si no seleccionas una imagen, se usará una predeterminada.
                 </Typography>
               </Box>
             )}
 
-            <Box sx={{ mt: 4 }}>
-              <Typography variant="h6" sx={{ mb: 3, color: "#332f2d" }}>
+            <Box sx={{ mt: { xs: 3, sm: 4 } }}>
+              <Typography
+                variant="h6"
+                sx={{
+                  mb: { xs: 2, sm: 3 },
+                  color: "#332f2d",
+                  fontSize: { xs: '1.1rem', sm: '1.25rem' },
+                  textAlign: { xs: 'center', sm: 'left' }
+                }}
+              >
                 Componentes del mueble
               </Typography>
 
-              <FormControl fullWidth>
-                <InputLabel id="lblComponentes">Seleccionar componente</InputLabel>
+              <FormControl
+                fullWidth
+                sx={{
+                  '& .MuiInputBase-root': {
+                    fontSize: { xs: '0.9rem', sm: '1rem' }
+                  }
+                }}
+              >
+                <InputLabel
+                  id="lblComponentes"
+                  sx={{ fontSize: { xs: '0.9rem', sm: '1rem' } }}
+                >
+                  Seleccionar componente
+                </InputLabel>
                 <Select
                   labelId="lblComponentes"
                   id="lstComponentes"
                   value={componenteSel}
                   label="Seleccionar componente"
                   onChange={handleChangeSel}
+                  size="medium"
                 >
                   <MenuItem value="">- Seleccione un componente -</MenuItem>
                   {componentes.map((componente) => (
@@ -496,7 +603,16 @@ function AltaMueble() {
               <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
                 <Button
                   variant="contained"
-                  sx={{ backgroundColor: "#da6429" }}
+                  fullWidth
+                  sx={{
+                    backgroundColor: "#da6429",
+                    height: { xs: '44px', sm: '48px' },
+                    fontSize: { xs: '0.9rem', sm: '1rem' },
+                    maxWidth: { xs: '100%', sm: '300px' },
+                    '&:hover': {
+                      backgroundColor: "#c55a24",
+                    }
+                  }}
                   onClick={() => agregarComponente()}
                   disabled={!componenteSel}
                 >
@@ -505,49 +621,87 @@ function AltaMueble() {
               </Box>
 
               {componentesSeleccionados.length > 0 ? (
-                <TableContainer component={Paper} sx={{ mt: 2 }}>
-                  <Table aria-label="simple table">
-                    <TableHead sx={{ backgroundColor: "#e2d0c6" }}>
-                      <TableRow>
-                        <TableCell align="center">NOMBRE</TableCell>
-                        <TableCell align="center">PRECIO</TableCell>
-                        <TableCell align="center">CANTIDAD</TableCell>
-                        <TableCell align="center">ELIMINAR</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {componentesSeleccionados.map((row) => (
-                        <TableRow
-                          key={row.id_componente}
-                          sx={{
-                            "&:last-child td, &:last-child th": { border: 0 },
-                          }}
-                        >
-                          <TableCell align="center">{row.nombre}</TableCell>
+                <Box sx={{ mt: 2, overflow: 'auto' }}>
+                  <TableContainer
+                    component={Paper}
+                    sx={{
+                      maxHeight: { xs: '300px', sm: '400px' },
+                      '& .MuiTableCell-root': {
+                        fontSize: { xs: '0.8rem', sm: '0.9rem' },
+                        padding: { xs: '8px 4px', sm: '16px 16px' }
+                      }
+                    }}
+                  >
+                    <Table
+                      aria-label="simple table"
+                      size={window.innerWidth < 600 ? "small" : "medium"}
+                    >
+                      <TableHead sx={{ backgroundColor: "#e2d0c6" }}>
+                        <TableRow>
+                          <TableCell align="center">NOMBRE</TableCell>
+                          <TableCell align="center">PRECIO</TableCell>
+                          <TableCell align="center">CANT.</TableCell>
                           <TableCell align="center">
-                            {row.precio + " €"}
-                          </TableCell>
-                          <TableCell align="center">{row.cantidad}</TableCell>
-                          <TableCell align="center">
-                            <Button
-                              onClick={() => handleDelete(row.id_componente)}
-                              style={{
-                                background: "none",
-                                border: "none",
-                                cursor: "pointer",
-                                padding: 0,
-                              }}
-                            >
-                              <DeleteIcon sx={{ color: "black" }} />
-                            </Button>
+                            <DeleteIcon sx={{ fontSize: { xs: '1rem', sm: '1.2rem' } }} />
                           </TableCell>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
+                      </TableHead>
+                      <TableBody>
+                        {componentesSeleccionados.map((row) => (
+                          <TableRow
+                            key={row.id_componente}
+                            sx={{
+                              "&:last-child td, &:last-child th": { border: 0 },
+                            }}
+                          >
+                            <TableCell
+                              align="center"
+                              sx={{
+                                wordBreak: 'break-word',
+                                minWidth: { xs: '80px', sm: 'auto' }
+                              }}
+                            >
+                              {row.nombre}
+                            </TableCell>
+                            <TableCell align="center">
+                              {row.precio + " €"}
+                            </TableCell>
+                            <TableCell align="center">{row.cantidad}</TableCell>
+                            <TableCell align="center">
+                              <Button
+                                onClick={() => handleDelete(row.id_componente)}
+                                sx={{
+                                  minWidth: 'auto',
+                                  padding: { xs: '4px', sm: '8px' },
+                                  background: "none",
+                                  border: "none",
+                                  cursor: "pointer",
+                                }}
+                              >
+                                <DeleteIcon
+                                  sx={{
+                                    color: "black",
+                                    fontSize: { xs: '1rem', sm: '1.2rem' }
+                                  }}
+                                />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                </Box>
               ) : (
-                <Typography variant="body2" sx={{ mt: 2, textAlign: 'center', color: 'text.secondary' }}>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    mt: 2,
+                    textAlign: 'center',
+                    color: 'text.secondary',
+                    fontSize: { xs: '0.85rem', sm: '0.9rem' }
+                  }}
+                >
                   No hay componentes seleccionados
                 </Typography>
               )}
@@ -556,9 +710,12 @@ function AltaMueble() {
             <Button
               variant="contained"
               sx={{
-                mt: 3,
+                mt: { xs: 3, sm: 4 },
                 mb: 2,
                 backgroundColor: "#da6429",
+                height: { xs: '52px', sm: '56px' },
+                fontSize: { xs: '1rem', sm: '1.1rem' },
+                fontWeight: 'bold',
                 '&:hover': {
                   backgroundColor: "#c55a24",
                 }
@@ -570,18 +727,28 @@ function AltaMueble() {
             </Button>
           </Box>
         </Paper>
-      </Container >
+      </Container>
 
+      {/* Estilos personalizados para el datepicker responsive */}
       <style>{`
         .custom-datepicker {
           width: 100%;
-          padding: 16.5px 14px;
-          font-size: 1rem;
+          padding: 12px 14px;
+          font-size: 0.9rem;
           border-radius: 4px;
           border: 1px solid rgba(0, 0, 0, 0.23);
           font-family: "Roboto", "Helvetica", "Arial", sans-serif;
           box-sizing: border-box;
+          min-height: 48px;
           margin-bottom: 10px;
+        }
+        
+        @media (min-width: 600px) {
+          .custom-datepicker {
+            padding: 16.5px 14px;
+            font-size: 1rem;
+            min-height: 56px;
+          }
         }
         
         .react-datepicker-wrapper {
@@ -590,11 +757,6 @@ function AltaMueble() {
         }
         
         .react-datepicker__input-container {
-          width: 100%;
-          display: block;
-        }
-        
-        .date-picker-wrapper {
           width: 100%;
           display: block;
         }
@@ -614,40 +776,113 @@ function AltaMueble() {
           color: white !important;
         }
         
-        /* Aumentar el tamaño del calendario */
+        /* Responsive datepicker */
         .react-datepicker {
-          font-size: 1rem !important;
+          font-size: 0.9rem !important;
+        }
+        
+        @media (min-width: 600px) {
+          .react-datepicker {
+            font-size: 1rem !important;
+          }
         }
         
         .react-datepicker__header {
-          padding-top: 10px !important;
+          padding-top: 8px !important;
+        }
+        
+        @media (min-width: 600px) {
+          .react-datepicker__header {
+            padding-top: 10px !important;
+          }
         }
         
         .react-datepicker__month {
-          margin: 0.4rem !important;
+          margin: 0.3rem !important;
+        }
+        
+        @media (min-width: 600px) {
+          .react-datepicker__month {
+            margin: 0.4rem !important;
+          }
         }
         
         .react-datepicker__day-name, .react-datepicker__day {
-          width: 2rem !important;
-          line-height: 2rem !important;
-          margin: 0.2rem !important;
+          width: 1.8rem !important;
+          line-height: 1.8rem !important;
+          margin: 0.1rem !important;
+          font-size: 0.8rem !important;
+        }
+        
+        @media (min-width: 600px) {
+          .react-datepicker__day-name, .react-datepicker__day {
+            width: 2rem !important;
+            line-height: 2rem !important;
+            margin: 0.2rem !important;
+            font-size: 0.9rem !important;
+          }
+        }
+        
+        /* Mejorar la visibilidad en móviles */
+        .react-datepicker__triangle {
+          display: none !important;
+        }
+        
+        @media (max-width: 599px) {
+          .react-datepicker-popper {
+            transform: none !important;
+            position: fixed !important;
+            top: 50% !important;
+            left: 50% !important;
+            transform: translate(-50%, -50%) !important;
+            z-index: 9999 !important;
+          }
+          
+          .react-datepicker {
+            border: 2px solid #da6429 !important;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3) !important;
+          }
         }
       `}</style>
 
+      {/* Diálogo de confirmación responsive */}
       <Dialog
         open={open}
         keepMounted
         onClose={handleClose}
         aria-describedby="alert-dialog-slide-description"
+        fullWidth
+        maxWidth="sm"
+        sx={{
+          '& .MuiDialog-paper': {
+            margin: { xs: 2, sm: 4 },
+            width: { xs: 'calc(100% - 32px)', sm: 'auto' },
+            maxWidth: { xs: 'calc(100% - 32px)', sm: '600px' }
+          }
+        }}
       >
-        <DialogTitle>Estado de alta</DialogTitle>
+        <DialogTitle sx={{ fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
+          Estado de alta
+        </DialogTitle>
         <DialogContent>
-          <DialogContentText id="alert-dialog-slide-description">
+          <DialogContentText
+            id="alert-dialog-slide-description"
+            sx={{ fontSize: { xs: '0.9rem', sm: '1rem' } }}
+          >
             {message}
           </DialogContentText>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose}>Cerrar</Button>
+        <DialogActions sx={{ px: { xs: 2, sm: 3 }, pb: { xs: 2, sm: 2 } }}>
+          <Button
+            onClick={handleClose}
+            sx={{
+              color: "#da6429",
+              fontSize: { xs: '0.9rem', sm: '1rem' },
+              minWidth: { xs: '80px', sm: '100px' }
+            }}
+          >
+            Cerrar
+          </Button>
         </DialogActions>
       </Dialog>
     </>

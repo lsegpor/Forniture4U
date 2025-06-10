@@ -49,8 +49,17 @@ const useUserStore = create(
                 get().setUser(userData, authToken);
 
                 // Notificar al carrito del cambio de autenticación
-                if (window.carritoStore) {
-                    window.carritoStore.getState().handleAuthChange(true, userData);
+                if (typeof window !== 'undefined' && window.carritoStore) {
+                    window.carritoStore.getState().handleLogin(userData);
+                }
+            },
+
+            register: (userData, authToken) => {
+                get().setUser(userData, authToken);
+
+                // Notificar al carrito del REGISTRO (transferir carrito)
+                if (typeof window !== 'undefined' && window.carritoStore) {
+                    window.carritoStore.getState().handleRegister(userData);
                 }
             },
 
@@ -189,5 +198,10 @@ const useUserStore = create(
         }
     )
 );
+
+// Exponer globalmente para integración con carrito store
+if (typeof window !== 'undefined') {
+    window.userStore = useUserStore;
+}
 
 export default useUserStore;
