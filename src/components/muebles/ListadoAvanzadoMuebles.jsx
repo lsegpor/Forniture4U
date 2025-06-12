@@ -44,9 +44,9 @@ import BuildIcon from "@mui/icons-material/Build";
 import BusinessIcon from "@mui/icons-material/Business";
 import SortIcon from "@mui/icons-material/Sort";
 import FilterListIcon from "@mui/icons-material/FilterList";
-import { apiUrl } from "../config";
-import useUserStore from "../stores/useUserStore";
-import useCarritoStore from "../stores/useCarritoStore";
+import { apiUrl } from "../../config";
+import useUserStore from "../../stores/useUserStore";
+import useCarritoStore from "../../stores/useCarritoStore";
 
 /**
  * Componente que muestra una lista de todos los muebles usando DataGrid.

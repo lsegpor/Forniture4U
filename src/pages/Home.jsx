@@ -1,8 +1,8 @@
 import { Outlet } from "react-router";
-import Menu from "../components/Menu";
-import Footer from "../components/Footer";
+import Menu from "../components/layout/Menu";
+import Footer from "../components/layout/Footer";
 import { MDBContainer } from "mdb-react-ui-kit";
-import Carrusel from "../components/Carrusel";
+import Carrusel from "../components/layout/Carrusel";
 import { useLocation } from "react-router";
 import { AuthListener } from "../hooks/useAuthListener";
 import { requestNotificationPermission } from "../utils/cartNotifications";

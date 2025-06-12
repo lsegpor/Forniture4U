@@ -40,9 +40,9 @@ import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
-import { apiUrl } from "../config";
-import useUserStore from "../stores/useUserStore";
-import useCarritoStore from "../stores/useCarritoStore";
+import { apiUrl } from "../../config";
+import useUserStore from "../../stores/useUserStore";
+import useCarritoStore from "../../stores/useCarritoStore";
 
 /**
  * Componente que muestra una lista de todos los componentes.

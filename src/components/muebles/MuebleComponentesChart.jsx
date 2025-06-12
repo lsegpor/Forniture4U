@@ -14,8 +14,8 @@ import { Box, Typography, IconButton, Container, useMediaQuery, useTheme } from 
 import { ChevronLeft, ChevronRight } from "@mui/icons-material";
 import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
-import { apiUrl } from "../config";
-import useUserStore from "../stores/useUserStore";
+import { apiUrl } from "../../config";
+import useUserStore from "../../stores/useUserStore";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 

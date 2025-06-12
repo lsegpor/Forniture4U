@@ -12,13 +12,13 @@ import {
 } from "mdb-react-ui-kit";
 import { useState, useEffect } from "react";
 import { Dialog, DialogActions, DialogContent, DialogTitle, DialogContentText, Button, useMediaQuery, useTheme } from "@mui/material";
-import logo from "../assets/logo.jpg";
+import logo from "../../assets/logo.jpg";
 import { NavLink } from "react-router-dom"
 import { useNavigate } from "react-router-dom";
-import useUserStore from "../stores/useUserStore";
-import useCarritoStore from "../stores/useCarritoStore";
-import { apiUrl } from "../config";
-import "../style/Menu.css";
+import useUserStore from "../../stores/useUserStore";
+import useCarritoStore from "../../stores/useCarritoStore";
+import { apiUrl } from "../../config";
+import "../../style/Menu.css";
 
 /**
  * Componente del menú de navegación.

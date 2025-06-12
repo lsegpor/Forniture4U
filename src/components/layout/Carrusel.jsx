@@ -5,9 +5,9 @@ import {
   MDBContainer,
 } from "mdb-react-ui-kit";
 import { useMediaQuery, useTheme } from "@mui/material";
-import foto1 from "../assets/ikea1.jpeg";
-import foto2 from "../assets/ikea2.jpeg";
-import foto3 from "../assets/ikea3.jpeg";
+import foto1 from "../../assets/ikea1.jpeg";
+import foto2 from "../../assets/ikea2.jpeg";
+import foto3 from "../../assets/ikea3.jpeg";
 
 /**
  * Componente Carrusel que muestra un carrusel de imágenes con descripciones.

@@ -1,6 +1,6 @@
-import { Box, TextField, Button, Typography, Container, Paper } from "@mui/material";
+import { Box, TextField, Button, Typography, Container } from "@mui/material";
 import { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router";
+import { useNavigate } from "react-router";
 import DatePicker, { registerLocale } from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { es } from "date-fns/locale";
@@ -20,14 +20,14 @@ import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
+import Paper from "@mui/material/Paper";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { apiUrl } from "../config";
+import { apiUrl } from "../../config";
+import useUserStore from "../../stores/useUserStore";
+import { Navigate } from "react-router-dom";
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { styled } from '@mui/material/styles';
 import axios from 'axios';
-import useUserStore from "../stores/useUserStore";
-import { Navigate } from "react-router-dom";
-import defaultImage from "../assets/default.jpeg";
 
 // Registrar el idioma español
 registerLocale("es", es);
@@ -45,24 +45,16 @@ const VisuallyHiddenInput = styled('input')({
 });
 
 /**
- * Componente para modificar un mueble existente.
- * @returns {JSX.Element} El componente de modificación de mueble.
+ * Componente para dar de alta un mueble.
+ * @returns {JSX.Element} El componente de alta de mueble.
  */
-function ModificarMueble() {
-  const params = useParams();
-
-  console.log("ID del mueble a modificar:", params.id_mueble);
-
-  const backendUrl = "http://localhost:3000";
-
+function AltaMueble() {
   const [datos, setDatos] = useState({
-    id_mueble: params.id_mueble,
     nombre: "",
     precio_base: "",
     fecha_entrega: "",
     requiere_montar: false,
-    descripcion: "",
-    id_componente_componentes: [],
+    descripcion: ""
   });
 
   const navigate = useNavigate();
@@ -70,138 +62,15 @@ function ModificarMueble() {
   const [message, setMessage] = useState("");
 
   const [componentes, setComponentes] = useState([]);
+  const [componentesSeleccionados, setComponentesSeleccionados] = useState([]);
   const [componenteSel, setComponenteSel] = useState(null);
-  const [componentesEliminados, setComponentesEliminados] = useState([]);
 
   const [redirect, setRedirect] = useState(false);
-
   const [imagen, setImagen] = useState(null);
   const [imagenPreview, setImagenPreview] = useState('');
-  const [imagenExistente, setImagenExistente] = useState('');
-  const [imagenEliminada, setImagenEliminada] = useState(false);
 
   const user = useUserStore((state) => state.user);
   const isEmpresa = useUserStore((state) => state.isEmpresa);
-
-  useEffect(() => {
-    if (!isEmpresa) {
-      setRedirect(true);
-    }
-
-    if (isEmpresa() && user?.id_empresa) {
-      setDatos(prev => ({
-        ...prev,
-        id_empresa: user.id_empresa
-      }));
-    }
-
-    async function getMuebleById() {
-      try {
-        let response = await fetch(apiUrl + "/mueble/" + datos.id_mueble);
-
-        if (response.ok) {
-          let data = await response.json();
-          console.log("Datos recibidos de la API:", data);
-          setDatos(data.datos);
-
-          setImagenEliminada(false);
-
-          if (data.datos.imagen) {
-            setImagenExistente(data.datos.imagen);
-            console.log("Imagen existente:", data.datos.imagen);
-          }
-        } else if (response.status === 404) {
-          setMessage(`El mueble no se pudo encontrar`);
-          handleClickOpen();
-        }
-
-        let response2 = await fetch(apiUrl + "/componentes");
-
-        if (response2.ok) {
-          let data = await response2.json();
-          setComponentes(data.datos);
-        }
-      } catch (error) {
-        console.error("Error al obtener datos:", error);
-      }
-    }
-
-    getMuebleById();
-  }, [datos.id_mueble, navigate, user, isEmpresa]);
-
-  useEffect(() => {
-    if (imagenExistente && !imagenEliminada) {
-      const imagenUrl = `${backendUrl}${imagenExistente}`;
-      console.log("Intentando cargar imagen desde:", imagenUrl);
-
-      // Comprobar si la imagen es accesible
-      fetch(imagenUrl)
-        .then(response => {
-          if (!response.ok) {
-            console.error("Error al acceder a la imagen:", response.status, response.statusText);
-          } else {
-            console.log("Imagen accesible correctamente");
-          }
-        })
-        .catch(error => {
-          console.error("Error al verificar la imagen:", error);
-        });
-    }
-  }, [imagenExistente, imagenEliminada, backendUrl]);
-
-  if (redirect) {
-    return <Navigate to="/" replace />;
-  }
-
-  const handleImagenChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setImagen(file);
-      setImagenEliminada(false);
-
-      // Crear una URL para la vista previa de la imagen
-      const fileReader = new FileReader();
-      fileReader.onload = () => {
-        setImagenPreview(fileReader.result);
-      };
-      fileReader.readAsDataURL(file);
-    }
-  };
-
-  /**
-   * Maneja el cambio de los campos del formulario.
-   * @param {Event} e - El evento de cambio del campo.
-   */
-  const handleChange = (e) => {
-    setDatos({
-      ...datos,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  /**
-   * Maneja el cambio de la fecha de entrega.
-   * @param {Date} date - La nueva fecha de entrega.
-   */
-  const handleDateChange = (date) => {
-    setDatos({
-      ...datos,
-      fecha_entrega: date ? date.toISOString().split("T")[0] : "", // Guardamos en formato yyyy-MM-dd
-    });
-  };
-
-  /**
-   * Maneja el cambio del estado del switch.
-   * @param {Event} e - El evento de cambio del switch.
-   */
-  const handleSwitchChange = (e) => {
-    const { name, type, checked, value } = e.target;
-
-    setDatos((prevDatos) => ({
-      ...prevDatos,
-      [name]: type === "checkbox" ? checked : value,
-    }));
-  };
 
   /**
    * Abre el diálogo de estado.
@@ -211,108 +80,11 @@ function ModificarMueble() {
   };
 
   /**
-   * Cierra el diálogo de estado y navega a la página anterior.
+   * Cierra el diálogo de estado y navega a la página principal.
    */
   const handleClose = () => {
     setOpen(false);
-    navigate(-1);
-  };
-
-  /**
-   * Maneja el cambio del componente seleccionado.
-   * @param {Event} event - El evento de cambio del componente.
-   */
-  const handleChangeSel = (event) => {
-    setComponenteSel(event.target.value);
-  };
-
-  /**
-   * Agrega un componente a la lista de componentes seleccionados.
-   */
-  const agregarComponente = () => {
-    // Buscar el componente por su id_componente en lugar de por índice
-    const componente = componentes.find(
-      (c) => c.id_componente === componenteSel
-    );
-
-    if (!componente) return; // Si no encuentra el componente, salir
-
-    // Verificar si el componente ya está en la lista de componentes seleccionados
-    setDatos((prevDatos) => {
-      const index = prevDatos.id_componente_componentes.findIndex(
-        (item) => item.id_componente === componente.id_componente
-      );
-
-      let updatedComponentes;
-      if (index !== -1) {
-        // Si el componente ya existe, incrementamos la cantidad
-        updatedComponentes = [...prevDatos.id_componente_componentes];
-        updatedComponentes[index] = {
-          ...updatedComponentes[index],
-          mueble_componentes: {
-            ...updatedComponentes[index].mueble_componentes,
-            cantidad: updatedComponentes[index].mueble_componentes.cantidad + 1,
-          },
-        };
-      } else {
-        // Si no existe, lo agregamos con cantidad 1
-        updatedComponentes = [
-          ...prevDatos.id_componente_componentes,
-          { ...componente, mueble_componentes: { cantidad: 1 } },
-        ];
-      }
-
-      return {
-        ...prevDatos,
-        id_componente_componentes: updatedComponentes,
-      };
-    });
-  };
-
-  /**
-   * Elimina un componente de la lista de componentes seleccionados.
-   * @param {number} id_componente - El ID del componente a eliminar.
-   */
-  const handleDelete = (id_componente) => {
-    setDatos((prevDatos) => {
-      const componente = prevDatos.id_componente_componentes.find(
-        c => c.id_componente === id_componente
-      );
-
-      // Si encontramos el componente y su cantidad llegará a 0
-      if (componente && componente.mueble_componentes.cantidad <= 1) {
-        // Agregar a la lista de componentes eliminados
-        setComponentesEliminados(prev => [
-          ...prev,
-          { id_componente: componente.id_componente }
-        ]);
-
-        // Filtrar este componente de la UI
-        return {
-          ...prevDatos,
-          id_componente_componentes: prevDatos.id_componente_componentes.filter(
-            c => c.id_componente !== id_componente
-          )
-        };
-      }
-
-      // Si la cantidad es mayor a 1, solo reducirla
-      return {
-        ...prevDatos,
-        id_componente_componentes: prevDatos.id_componente_componentes.map(c => {
-          if (c.id_componente === id_componente) {
-            return {
-              ...c,
-              mueble_componentes: {
-                ...c.mueble_componentes,
-                cantidad: c.mueble_componentes.cantidad - 1
-              }
-            };
-          }
-          return c;
-        })
-      };
-    });
+    navigate("/");
   };
 
   /**
@@ -320,6 +92,7 @@ function ModificarMueble() {
    * @param {Event} e - El evento de envío del formulario.
    */
   const handleSubmit = async (e) => {
+    // No hacemos submit
     e.preventDefault();
 
     try {
@@ -336,22 +109,14 @@ function ModificarMueble() {
         return;
       }
 
-      const componentesActuales = datos.id_componente_componentes.map(componente => ({
-        id_componente: componente.id_componente,
-        cantidad: componente.mueble_componentes.cantidad
-      }));
-
-      // Incluir componentes eliminados con cantidad 0
-      const componentesEliminados0 = componentesEliminados.map(comp => ({
-        id_componente: comp.id_componente,
-        cantidad: 0
-      }));
-
-      // Combinar ambos arrays para enviar al backend
-      const componentesConCantidad = [...componentesActuales, ...componentesEliminados0];
+      const componentesConCantidad = componentesSeleccionados.map(
+        (componente) => ({
+          id_componente: componente.id_componente,
+          cantidad: componente.cantidad || 1, // Si no tiene cantidad, la ponemos en 1
+        })
+      );
 
       const formDataToSend = new FormData();
-      formDataToSend.append('id_mueble', datos.id_mueble);
       formDataToSend.append('nombre', datos.nombre);
       formDataToSend.append('precio_base', datos.precio_base);
       formDataToSend.append('fecha_entrega', datos.fecha_entrega);
@@ -364,39 +129,181 @@ function ModificarMueble() {
         formDataToSend.append('imagen', imagen);
       }
 
-      if (imagenEliminada && !imagen) {
-        formDataToSend.append('imagen_null', 'true');
-      }
-
-      console.log("Datos enviados:", {
-        id_mueble: datos.id_mueble,
-        nombre: datos.nombre,
-        precio_base: datos.precio_base,
-        fecha_entrega: datos.fecha_entrega,
-        requiere_montar: datos.requiere_montar,
-        id_empresa: user.id_empresa,
-        descripcion: datos.descripcion,
-        componentes: componentesConCantidad
-      });
-
-      const response = await axios.put(apiUrl + "/mueble/" + datos.id_mueble, formDataToSend, {
+      const response = await axios.post(`${apiUrl}/mueble`, formDataToSend, {
         headers: {
-          "Content-Type": "multipart/form-data",
-        },
+          'Content-Type': 'multipart/form-data',
+        }
       });
 
       if (response.data.ok) {
-        setMessage("Mueble actualizado correctamente");
+        setMessage(`Mueble creado correctamente`);
+
+        setDatos({
+          nombre: "",
+          precio_base: "",
+          fecha_entrega: "",
+          requiere_montar: false,
+          id_empresa: user?.id_empresa || "",
+          descripcion: "",
+        });
+        setComponentesSeleccionados([]);
+        setImagen(null);
+        setImagenPreview('');
       } else {
-        setMessage("Error al actualizar el mueble");
+        setMessage(`Error al crear el mueble: ${response.data.mensaje}`);
       }
       handleClickOpen();
     } catch (error) {
-      console.error("Error en la solicitud:", error);
+      console.log("Error", error);
       setMessage("Error al realizar la solicitud");
       handleClickOpen();
     }
   };
+
+  /**
+   * Maneja el cambio de los campos del formulario.
+   * @param {Event} e - El evento de cambio del campo.
+   */
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+
+    // Para el Switch, actualizamos con el valor booleano
+    if (type === "checkbox") {
+      setDatos({
+        ...datos,
+        [name]: checked, // El estado en_stock será un booleano
+      });
+    } else {
+      setDatos({
+        ...datos,
+        [name]: value, // Para los demás campos, solo actualizamos el valor
+      });
+    }
+  };
+
+  /**
+   * Maneja el cambio de la fecha de entrega.
+   * @param {Date} date - La nueva fecha de entrega.
+   */
+  const handleDateChange = (date) => {
+    setDatos({
+      ...datos,
+      fecha_entrega: date ? date.toISOString().split("T")[0] : "", // Guardamos en formato yyyy-MM-dd
+    });
+  };
+
+  /**
+   * Maneja el cambio del componente seleccionado.
+   * @param {Event} event - El evento de cambio del componente.
+   */
+  const handleChangeSel = (event) => {
+    setComponenteSel(event.target.value);
+  };
+
+  useEffect(() => {
+    if (!isEmpresa) {
+      setRedirect(true);
+    }
+
+    if (isEmpresa() && user?.id_empresa) {
+      setDatos(prev => ({
+        ...prev,
+        id_empresa: user.id_empresa
+      }));
+    }
+
+    async function fetchComponentes() {
+      try {
+        // Cargar componentes
+        const responseComponentes = await fetch(`${apiUrl}/componentes`);
+        if (responseComponentes.ok) {
+          const dataComponentes = await responseComponentes.json();
+          setComponentes(dataComponentes.datos || []);
+        }
+      } catch (error) {
+        console.error("Error al cargar componentes:", error);
+      }
+    }
+
+    fetchComponentes();
+  }, [user, isEmpresa]);
+
+  if (redirect) {
+    return <Navigate to="/" replace />;
+  }
+
+  const handleImagenChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImagen(file);
+
+      // Crear una URL para la vista previa de la imagen
+      const fileReader = new FileReader();
+      fileReader.onload = () => {
+        setImagenPreview(fileReader.result);
+      };
+      fileReader.readAsDataURL(file);
+    }
+  };
+
+  /**
+   * Agrega un componente a la lista de componentes seleccionados.
+   */
+  const agregarComponente = () => {
+    if (!componenteSel) return;
+
+    // Buscar el componente por su id_componente
+    const componente = componentes.find(
+      (c) => c.id_componente === parseInt(componenteSel)
+    );
+
+    if (!componente) return; // Si no encuentra el componente, salir
+
+    // Verificar si el componente ya está en la lista de componentes seleccionados
+    setComponentesSeleccionados((prevComponentes) => {
+      const index = prevComponentes.findIndex(
+        (item) => item.id_componente === componente.id_componente
+      );
+
+      if (index !== -1) {
+        // Si el componente ya existe, incrementamos la cantidad
+        const updatedComponentes = [...prevComponentes];
+        updatedComponentes[index] = {
+          ...updatedComponentes[index],
+          cantidad: updatedComponentes[index].cantidad + 1,
+        };
+        return updatedComponentes;
+      } else {
+        // Si no existe, lo agregamos con cantidad 1
+        return [...prevComponentes, { ...componente, cantidad: 1 }];
+      }
+    });
+
+    // Limpiar la selección
+    setComponenteSel("");
+  };
+
+  /**
+   * Elimina un componente de la lista de componentes seleccionados.
+   * @param {number} id_componente - El ID del componente a eliminar.
+   */
+  function handleDelete(id_componente) {
+    setComponentesSeleccionados(
+      (prevComponentes) =>
+        prevComponentes
+          .map((componente) => {
+            if (componente.id_componente === id_componente) {
+              if (componente.cantidad > 1) {
+                // Si la cantidad es mayor a 1, la reducimos
+                return { ...componente, cantidad: componente.cantidad - 1 };
+              }
+              return null; // Si la cantidad es 1, lo eliminamos
+            }
+            return componente;
+          })
+          .filter(Boolean) // Filtra los `null`, eliminando los componentes con cantidad 0
+    );
+  }
 
   if (!isEmpresa()) {
     return (
@@ -451,7 +358,7 @@ function ModificarMueble() {
               px: 1
             }}
           >
-            Modificar mueble
+            Alta de mueble
           </Typography>
 
           <Box
@@ -470,8 +377,8 @@ function ModificarMueble() {
               type="text"
               value={datos.nombre}
               onChange={handleChange}
-              fullWidth
               margin="normal"
+              fullWidth
               required
               size="medium"
               sx={{
@@ -488,8 +395,8 @@ function ModificarMueble() {
               type="number"
               value={datos.precio_base}
               onChange={handleChange}
-              fullWidth
               margin="normal"
+              fullWidth
               required
               size="medium"
               sx={{
@@ -506,10 +413,10 @@ function ModificarMueble() {
               type="text"
               value={datos.descripcion}
               onChange={handleChange}
-              fullWidth
+              margin="normal"
               multiline
               rows={4}
-              margin="normal"
+              fullWidth
               required
               size="medium"
               sx={{
@@ -555,16 +462,16 @@ function ModificarMueble() {
               />
             </Box>
 
-            <Box sx={{ my: 2 }}>
+            <Box sx={{ my: { xs: 2, sm: 3 } }}>
               <MDBSwitch
                 id="flexSwitchCheckDefault"
                 label="¿El mueble requiere de montaje?"
                 name="requiere_montar"
-                onChange={handleSwitchChange} // Actualiza el estado de en_stock
+                onChange={(e) => handleChange(e)}
                 checked={
                   datos.requiere_montar === "true" ||
                   datos.requiere_montar === true
-                } // Para que sea un booleano
+                }
               />
             </Box>
 
@@ -634,50 +541,6 @@ function ModificarMueble() {
                   Eliminar imagen
                 </Button>
               </Box>
-            ) : !imagenEliminada && imagenExistente ? (
-              <Box sx={{ mt: 2, mb: 2, textAlign: 'center' }}>
-                <Typography
-                  variant="body2"
-                  color="text.secondary"
-                  sx={{ fontSize: { xs: '0.85rem', sm: '0.9rem' } }}
-                >
-                  Imagen actual:
-                </Typography>
-                <Box sx={{
-                  display: 'flex',
-                  justifyContent: 'center',
-                  mb: 2
-                }}>
-                  <img
-                    src={`${backendUrl}${imagenExistente}`}
-                    alt="Imagen actual"
-                    style={{ maxWidth: '200px', maxHeight: '200px', objectFit: 'contain' }}
-                    onError={(e) => {
-                      console.error("Error al cargar la imagen:", e);
-                      e.target.src = defaultImage; // Cargar imagen por defecto si falla
-                    }}
-                  />
-                </Box>
-
-                <Button
-                  variant="contained"
-                  onClick={() => {
-                    setImagen(null);
-                    setImagenPreview('');
-                  }}
-                  fullWidth
-                  sx={{
-                    backgroundColor: "#da6429",
-                    height: { xs: '40px', sm: '48px' },
-                    fontSize: { xs: '0.85rem', sm: '0.95rem' },
-                    '&:hover': {
-                      backgroundColor: "#c55a24",
-                    }
-                  }}
-                >
-                  Eliminar imagen
-                </Button>
-              </Box>
             ) : (
               <Box sx={{ mt: 2, mb: 2, textAlign: 'center' }}>
                 <Typography
@@ -687,24 +550,10 @@ function ModificarMueble() {
                 >
                   Si no seleccionas una imagen, se usará una predeterminada.
                 </Typography>
-                <Box sx={{
-                  display: 'flex',
-                  justifyContent: 'center',
-                  mb: 2
-                }}>
-                  <img
-                    src={defaultImage}
-                    alt="Imagen actual"
-                    style={{ maxWidth: "200px", maxHeight: "200px", objectFit: "contain" }}
-                    onError={(e) => {
-                      console.error("Error al cargar la imagen:", e);
-                    }}
-                  />
-                </Box>
               </Box>
             )}
 
-            <Box sx={{ mt: 4 }}>
+            <Box sx={{ mt: { xs: 3, sm: 4 } }}>
               <Typography
                 variant="h6"
                 sx={{
@@ -735,7 +584,7 @@ function ModificarMueble() {
                   labelId="lblComponentes"
                   id="lstComponentes"
                   value={componenteSel}
-                  label="Componente a seleccionar"
+                  label="Seleccionar componente"
                   onChange={handleChangeSel}
                   size="medium"
                 >
@@ -745,7 +594,7 @@ function ModificarMueble() {
                       key={componente.id_componente}
                       value={componente.id_componente}
                     >
-                      {componente.nombre} - {componente.precio} €
+                      {componente.nombre} - {componente.precio}€
                     </MenuItem>
                   ))}
                 </Select>
@@ -771,7 +620,7 @@ function ModificarMueble() {
                 </Button>
               </Box>
 
-              {datos.id_componente_componentes.length > 0 ? (
+              {componentesSeleccionados.length > 0 ? (
                 <Box sx={{ mt: 2, overflow: 'auto' }}>
                   <TableContainer
                     component={Paper}
@@ -798,51 +647,47 @@ function ModificarMueble() {
                         </TableRow>
                       </TableHead>
                       <TableBody>
-                        {datos.id_componente_componentes
-                          .filter((row) => row.mueble_componentes.cantidad > 0)
-                          .map((row) => (
-                            <TableRow
-                              key={row.id_componente}
+                        {componentesSeleccionados.map((row) => (
+                          <TableRow
+                            key={row.id_componente}
+                            sx={{
+                              "&:last-child td, &:last-child th": { border: 0 },
+                            }}
+                          >
+                            <TableCell
+                              align="center"
                               sx={{
-                                "&:last-child td, &:last-child th": { border: 0 },
+                                wordBreak: 'break-word',
+                                minWidth: { xs: '80px', sm: 'auto' }
                               }}
                             >
-                              <TableCell
-                                align="center"
+                              {row.nombre}
+                            </TableCell>
+                            <TableCell align="center">
+                              {row.precio + " €"}
+                            </TableCell>
+                            <TableCell align="center">{row.cantidad}</TableCell>
+                            <TableCell align="center">
+                              <Button
+                                onClick={() => handleDelete(row.id_componente)}
                                 sx={{
-                                  wordBreak: 'break-word',
-                                  minWidth: { xs: '80px', sm: 'auto' }
+                                  minWidth: 'auto',
+                                  padding: { xs: '4px', sm: '8px' },
+                                  background: "none",
+                                  border: "none",
+                                  cursor: "pointer",
                                 }}
                               >
-                                {row.nombre}
-                              </TableCell>
-                              <TableCell align="center">
-                                {row.precio + " €"}
-                              </TableCell>
-                              <TableCell align="center">
-                                {row.mueble_componentes.cantidad}
-                              </TableCell>
-                              <TableCell align="center">
-                                <Button
-                                  onClick={() => handleDelete(row.id_componente)}
+                                <DeleteIcon
                                   sx={{
-                                    minWidth: 'auto',
-                                    padding: { xs: '4px', sm: '8px' },
-                                    background: "none",
-                                    border: "none",
-                                    cursor: "pointer",
+                                    color: "black",
+                                    fontSize: { xs: '1rem', sm: '1.2rem' }
                                   }}
-                                >
-                                  <DeleteIcon
-                                    sx={{
-                                      color: "black",
-                                      fontSize: { xs: '1rem', sm: '1.2rem' }
-                                    }}
-                                  />
-                                </Button>
-                              </TableCell>
-                            </TableRow>
-                          ))}
+                                />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
                       </TableBody>
                     </Table>
                   </TableContainer>
@@ -857,7 +702,7 @@ function ModificarMueble() {
                     fontSize: { xs: '0.85rem', sm: '0.9rem' }
                   }}
                 >
-                  No hay componentes seleccionados.
+                  No hay componentes seleccionados
                 </Typography>
               )}
             </Box>
@@ -1044,4 +889,4 @@ function ModificarMueble() {
   );
 }
 
-export default ModificarMueble;
+export default AltaMueble;

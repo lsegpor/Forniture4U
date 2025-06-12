@@ -51,10 +51,10 @@ import {
     Delete as DeleteIcon,
     Receipt as ReceiptIcon
 } from '@mui/icons-material';
-import useUserStore from "../stores/useUserStore";
-import { apiUrl } from "../config";
-import "../style/Perfiles.css";
-import EstadoChipEditable from './EstadoChipEditable';
+import useUserStore from "../../stores/useUserStore";
+import { apiUrl } from "../../config";
+import "../../style/Perfiles.css";
+import EstadoChipEditable from '../ui/EstadoChipEditable';
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 

@@ -31,10 +31,10 @@ import HowToRegIcon from '@mui/icons-material/HowToReg';
 import BusinessIcon from '@mui/icons-material/Business';
 import PersonIcon from '@mui/icons-material/Person';
 import { useNavigate } from 'react-router';
-import { apiUrl } from '../config';
+import { apiUrl } from '../../config';
 import { es } from 'date-fns/locale';
-import useUserStore from "../stores/useUserStore";
-import useCarritoStore from '../stores/useCarritoStore';
+import useUserStore from "../../stores/useUserStore";
+import useCarritoStore from '../../stores/useCarritoStore';
 
 registerLocale("es", es);
 

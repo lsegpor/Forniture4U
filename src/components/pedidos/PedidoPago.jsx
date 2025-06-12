@@ -27,9 +27,9 @@ import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import PaymentIcon from '@mui/icons-material/Payment';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import DeleteIcon from "@mui/icons-material/Delete";
-import useCarritoStore from "../stores/useCarritoStore";
-import useUserStore from "../stores/useUserStore";
-import { apiUrl } from "../config";
+import useCarritoStore from "../../stores/useCarritoStore";
+import useUserStore from "../../stores/useUserStore";
+import { apiUrl } from "../../config";
 import Grid from "@mui/material/Grid2";
 
 /**

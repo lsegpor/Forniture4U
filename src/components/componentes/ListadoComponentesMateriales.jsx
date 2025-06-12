@@ -8,13 +8,17 @@ import {
   Paper,
   Typography,
   Box,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
   Button,
+  Modal,
   Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
   DialogTitle,
-  Modal,
   IconButton,
   Fab,
   Badge,
@@ -30,30 +34,30 @@ import {
   useMediaQuery,
   useTheme
 } from "@mui/material";
+import { useEffect, useState } from "react";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import InfoIcon from "@mui/icons-material/Info";
 import CloseIcon from "@mui/icons-material/Close";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart";
-import BuildIcon from "@mui/icons-material/Build";
-import BusinessIcon from "@mui/icons-material/Business";
 import { useNavigate } from "react-router";
-import { useParams } from "react-router";
-import { useState, useEffect } from "react";
-import { apiUrl } from "../config";
-import useUserStore from "../stores/useUserStore";
-import useCarritoStore from "../stores/useCarritoStore";
+import { apiUrl } from "../../config";
+import useUserStore from "../../stores/useUserStore";
+import useCarritoStore from "../../stores/useCarritoStore";
 
 /**
- * Componente BuscarMueble que permite buscar y gestionar muebles.
- * @returns {JSX.Element} El componente BuscarMueble.
+ * Componente que muestra una lista de componentes filtrados por material.
+ * @component
  */
-function BuscarMueble() {
-  const { nombre } = useParams();
-  const [muebles, setMuebles] = useState([]);
+function ListadoComponentesMateriales() {
+  const [materiales, setMateriales] = useState([]);
+  const [materialSeleccionado, setMaterialSeleccionado] = useState("");
+  const [componentes, setComponentes] = useState([]);
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState("");
+  const [openModal, setOpenModal] = useState(false);
+  const [modalContent, setModalContent] = useState('');
   const [openCarritoModal, setOpenCarritoModal] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   const [openLoginDialog, setOpenLoginDialog] = useState(false);
@@ -65,7 +69,6 @@ function BuscarMueble() {
   const navigate = useNavigate();
 
   const isEmpresa = useUserStore((state) => state.isEmpresa());
-  const user = useUserStore((state) => state.user);
   const isLoggedIn = useUserStore((state) => state.isLoggedIn);
 
   // Estados y funciones del carrito
@@ -81,6 +84,21 @@ function BuscarMueble() {
     validarStock
   } = useCarritoStore();
 
+  const modalStyle = {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: { xs: '90%', sm: 400, md: 500 },
+    maxWidth: "90vw",
+    maxHeight: "80vh",
+    bgcolor: 'background.paper',
+    borderRadius: 2,
+    boxShadow: 24,
+    p: 4,
+    outline: 'none'
+  };
+
   const carritoModalStyle = {
     position: 'absolute',
     top: '50%',
@@ -92,17 +110,18 @@ function BuscarMueble() {
     bgcolor: 'background.paper',
     borderRadius: 2,
     boxShadow: 24,
-    p: { xs: 2, sm: 3 },
+    p: 3,
     outline: 'none',
     overflow: 'auto'
   };
 
-  const handleClickOpen = () => {
-    setOpen(true);
+  const handleOpenModal = (content) => {
+    setModalContent(content);
+    setOpenModal(true);
   };
 
-  const handleClose = () => {
-    setOpen(false);
+  const handleCloseModal = () => {
+    setOpenModal(false);
   };
 
   const handleOpenCarritoModal = () => {
@@ -146,34 +165,113 @@ function BuscarMueble() {
     navigate("/login");
   };
 
-  const handleAgregarAlCarrito = async (mueble) => {
+  /**
+   * Abre el diálogo de confirmación.
+   */
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+
+  /**
+   * Cierra el diálogo de confirmación.
+   */
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  /**
+   * Elimina un componente por su ID.
+   * @param {number} id_componente - ID del componente a eliminar.
+   */
+  const handleDelete = async (id_componente) => {
     try {
-      showSnackbar('Verificando disponibilidad...', 'info');
+      const response = await fetch(apiUrl + `/componentes/${id_componente}`, {
+        method: "DELETE",
+      });
 
-      // Formatear el mueble para el carrito
-      const muebleCarrito = {
-        id_mueble: mueble.id_mueble,
-        id_producto: mueble.id_mueble, // Para compatibilidad
-        tipo_producto: 'mueble',
-        nombre: mueble.nombre,
-        precio: mueble.precio_base,
-        precio_base: mueble.precio_base,
-        descripcion: mueble.descripcion,
-        requiere_montar: mueble.requiere_montar,
-        fecha_entrega: mueble.fecha_entrega
-      };
+      if (response.ok) {
+        setComponentes((prevRows) =>
+          prevRows.filter((row) => row.id_componente !== id_componente)
+        );
+        setMessage(
+          `Componente con ID ${id_componente} eliminado correctamente`
+        );
+      } else {
+        setMessage(`Error al eliminar el componente con ID ${id_componente}`);
+      }
+      handleClickOpen();
+    } catch (error) {
+      console.error("Error al realizar la solicitud:", error);
+      setMessage("Error al realizar la solicitud"); // Mensaje de error
+      handleClickOpen();
+    }
+  };
 
-      // Verificar stock (esto validará internamente los componentes)
-      const stockValido = await validarStock(muebleCarrito);
-      if (!stockValido) {
-        showSnackbar('No hay suficientes componentes disponibles para este mueble', 'warning');
+  // Obtener materiales únicos al cargar el componente
+  useEffect(() => {
+    const fetchMateriales = async () => {
+      try {
+        const response = await fetch(apiUrl + "/componentes/materiales");
+        const data = await response.json();
+        setMateriales(data);
+      } catch (error) {
+        console.error("Error al obtener materiales:", error);
+      }
+    };
+
+    fetchMateriales();
+  }, []);
+
+  const handleAgregarAlCarrito = (componente) => {
+    try {
+      // Verificar si hay stock disponible
+      if (componente.cantidad <= 0) {
+        showSnackbar('Este componente no tiene stock disponible', 'error');
         return;
       }
 
-      await agregarItem(muebleCarrito);
-      showSnackbar(`${mueble.nombre} agregado al carrito`, 'success');
+      // Formatear el componente para el carrito
+      const componenteCarrito = {
+        id_componente: componente.id_componente,
+        id_producto: componente.id_componente, // Para compatibilidad
+        tipo_producto: 'componente',
+        nombre: componente.nombre,
+        precio: componente.precio,
+        descripcion: componente.descripcion,
+        cantidad: componente.cantidad, // Stock disponible
+      };
+
+      // Verificar si se puede agregar más cantidad
+      if (!validarStock(componenteCarrito)) {
+        showSnackbar('No hay suficiente stock disponible', 'warning');
+        return;
+      }
+
+      agregarItem(componenteCarrito);
+      showSnackbar(`${componente.nombre} agregado al carrito`, 'success');
     } catch (error) {
       showSnackbar(error.message || 'Error al agregar al carrito', 'error');
+    }
+  };
+
+  /**
+   * Maneja el cambio del material seleccionado.
+   * @param {Event} event - El evento de cambio del material.
+   */
+  const handleMaterialChange = async (event) => {
+    const material = event.target.value;
+    setMaterialSeleccionado(material);
+
+    if (material) {
+      try {
+        const response = await fetch(apiUrl + `/componentes/materiales/${material}`);
+        const data = await response.json();
+        setComponentes(data);
+      } catch (error) {
+        console.error("Error al obtener componentes:", error);
+      }
+    } else {
+      setComponentes([]);
     }
   };
 
@@ -185,58 +283,8 @@ function BuscarMueble() {
     }
   };
 
-  /**
-   * Maneja la eliminación de un mueble.
-   * @param {number} id_mueble - El ID del mueble a eliminar.
-   */
-  const handleDelete = async (id_mueble) => {
-    try {
-      const response = await fetch(apiUrl + `/mueble/${id_mueble}`, {
-        method: "DELETE",
-      });
-
-      if (response.ok) {
-        setMuebles((prevRows) =>
-          prevRows.filter((row) => row.id_mueble !== id_mueble)
-        );
-        setMessage(
-          `Mueble con ID ${id_mueble} eliminado correctamente`
-        );
-      } else {
-        setMessage(`Error al eliminar el mueble con ID ${id_mueble}`);
-      }
-      handleClickOpen();
-    } catch (error) {
-      console.error("Error al realizar la solicitud:", error);
-      setMessage("Error al realizar la solicitud"); // Mensaje de error
-      handleClickOpen();
-    }
-  };
-
-  useEffect(() => {
-    const fetchMuebles = async () => {
-      try {
-        const response = await fetch(
-          apiUrl + `/mueble/buscar?nombre=${nombre}`
-        );
-        const data = await response.json();
-
-        if (response.ok) {
-          setMuebles(data); // Actualizar el estado con los resultados de la búsqueda
-        } else {
-          setMuebles([]); // Limpiar los resultados
-        }
-      } catch (error) {
-        console.error("Error al obtener muebles:", error);
-        setMuebles([]); // Limpiar los resultados en caso de error
-      }
-    };
-
-    fetchMuebles();
-  }, [nombre]);
-
   // Componente Card para vista móvil
-  const MuebleCard = ({ mueble }) => (
+  const ComponenteCard = ({ componente }) => (
     <Card
       sx={{
         mb: 2,
@@ -257,33 +305,27 @@ function BuscarMueble() {
             fontSize: { xs: '1.1rem', sm: '1.25rem' }
           }}
         >
-          {mueble.nombre}
+          {componente.nombre}
         </Typography>
 
         <Box sx={{ mb: 2 }}>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
-            <strong>Precio:</strong> {mueble.precio_base}€
+            <strong>Precio:</strong> {componente.precio}€
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
-            <strong>Fecha entrega:</strong> {mueble.fecha_entrega}
+            <strong>Fecha importación:</strong> {componente.fecha_importacion}
           </Typography>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1, mb: 1 }}>
-            <BuildIcon sx={{ fontSize: '1rem', color: 'text.secondary' }} />
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+            <strong>Material:</strong> {componente.material}
+          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
+            <strong>Stock:</strong>
             <Chip
-              label={mueble.requiere_montar ? "Requiere montaje" : "Sin montaje"}
+              label={componente.cantidad}
               size="small"
-              color={mueble.requiere_montar ? "warning" : "success"}
-              variant="outlined"
+              color={componente.cantidad > 0 ? "success" : "error"}
             />
           </Box>
-          {mueble.id_empresa_empresa?.nombre_empresa && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
-              <BusinessIcon sx={{ fontSize: '1rem', color: 'text.secondary' }} />
-              <Typography variant="body2" color="text.secondary">
-                {mueble.id_empresa_empresa.nombre_empresa}
-              </Typography>
-            </Box>
-          )}
         </Box>
       </CardContent>
 
@@ -292,7 +334,7 @@ function BuscarMueble() {
           <Button
             size="small"
             startIcon={<InfoIcon />}
-            onClick={() => navigate("/" + mueble.id_mueble)}
+            onClick={() => handleOpenModal(componente.descripcion)}
             sx={{
               color: '#da6429',
               borderColor: '#da6429',
@@ -303,30 +345,37 @@ function BuscarMueble() {
             }}
             variant="outlined"
           >
-            Ver Detalles
+            Ver Descripción
           </Button>
 
           {!isEmpresa && (
             <Tooltip title={
-              tieneProducto(mueble.id_mueble, 'mueble') ? "Ya está en el carrito" : "Agregar al carrito"
+              componente.cantidad === 0 ? "Sin stock" :
+                tieneProducto(componente.id_componente, 'componente') ? "Ya está en el carrito" :
+                  "Agregar al carrito"
             }>
               <span>
                 <Button
                   size="small"
                   startIcon={<AddShoppingCartIcon />}
-                  onClick={() => handleAgregarAlCarrito(mueble)}
-                  variant={tieneProducto(mueble.id_mueble, 'mueble') ? "contained" : "outlined"}
+                  onClick={() => handleAgregarAlCarrito(componente)}
+                  disabled={componente.cantidad === 0}
+                  variant={tieneProducto(componente.id_componente, 'componente') ? "contained" : "outlined"}
                   sx={{
-                    backgroundColor: tieneProducto(mueble.id_mueble, 'mueble') ? "#4caf50" : "transparent",
-                    color: tieneProducto(mueble.id_mueble, 'mueble') ? "white" : "#da6429",
-                    borderColor: tieneProducto(mueble.id_mueble, 'mueble') ? "#4caf50" : "#da6429",
+                    backgroundColor: tieneProducto(componente.id_componente, 'componente') ? "#4caf50" : "transparent",
+                    color: tieneProducto(componente.id_componente, 'componente') ? "white" : "#da6429",
+                    borderColor: tieneProducto(componente.id_componente, 'componente') ? "#4caf50" : "#da6429",
                     '&:hover': {
-                      backgroundColor: tieneProducto(mueble.id_mueble, 'mueble') ? "#45a049" : "rgba(218, 100, 41, 0.04)",
-                      borderColor: tieneProducto(mueble.id_mueble, 'mueble') ? "#45a049" : "#c55520",
+                      backgroundColor: tieneProducto(componente.id_componente, 'componente') ? "#45a049" : "rgba(218, 100, 41, 0.04)",
+                      borderColor: tieneProducto(componente.id_componente, 'componente') ? "#45a049" : "#c55520",
+                    },
+                    '&:disabled': {
+                      color: '#ccc',
+                      borderColor: '#ccc'
                     }
                   }}
                 >
-                  {tieneProducto(mueble.id_mueble, 'mueble') ? "En carrito" : "Agregar"}
+                  {tieneProducto(componente.id_componente, 'componente') ? "En carrito" : "Agregar"}
                 </Button>
               </span>
             </Tooltip>
@@ -337,8 +386,7 @@ function BuscarMueble() {
               <Button
                 size="small"
                 startIcon={<EditIcon />}
-                onClick={() => navigate("/modificarmueble/" + mueble.id_mueble)}
-                disabled={!(user?.id_empresa === mueble.id_empresa)}
+                onClick={() => navigate("/modificarcomponente/" + componente.id_componente)}
                 variant="outlined"
                 sx={{
                   color: '#666',
@@ -346,10 +394,6 @@ function BuscarMueble() {
                   '&:hover': {
                     borderColor: '#333',
                     backgroundColor: 'rgba(0,0,0,0.04)'
-                  },
-                  '&:disabled': {
-                    color: '#ccc',
-                    borderColor: '#ccc'
                   }
                 }}
               >
@@ -358,17 +402,12 @@ function BuscarMueble() {
               <Button
                 size="small"
                 startIcon={<DeleteIcon />}
-                onClick={() => handleDelete(mueble.id_mueble)}
-                disabled={!(user?.id_empresa === mueble.id_empresa)}
+                onClick={() => handleDelete(componente.id_componente)}
                 variant="outlined"
                 color="error"
                 sx={{
                   '&:hover': {
                     backgroundColor: 'rgba(211, 47, 47, 0.04)'
-                  },
-                  '&:disabled': {
-                    color: '#ccc',
-                    borderColor: '#ccc'
                   }
                 }}
               >
@@ -387,15 +426,13 @@ function BuscarMueble() {
         variant="h4"
         align="center"
         sx={{
-          mb: { xs: 3, sm: 4 },
+          m: 4,
           color: "#332f2d",
           fontFamily: '"Georgia", "Times New Roman", serif',
-          fontWeight: 'bold',
-          fontSize: { xs: '1.8rem', sm: '2.2rem', md: '2.5rem' },
-          px: 1
+          fontWeight: 'bold'
         }}
       >
-        Resultados para &quot;{nombre}&quot;
+        Listado de componentes por materiales
       </Typography>
 
       {/* Botón flotante del carrito */}
@@ -412,7 +449,7 @@ function BuscarMueble() {
               md: 'calc(120px + 1rem)', // 80px altura navbar desktop + margen
               lg: 'calc(100px + 1rem)'
             },
-            right: { xs: 16, sm: 20 },
+            right: 20,
             backgroundColor: '#da6429',
             '&:hover': {
               backgroundColor: '#c55520'
@@ -423,53 +460,69 @@ function BuscarMueble() {
           }}
         >
           <Badge badgeContent={getCantidadTotal()} color="error">
-            <ShoppingCartIcon sx={{ fontSize: { xs: '1.2rem', sm: '1.5rem' } }} />
+            <ShoppingCartIcon />
           </Badge>
         </Fab>
       )}
 
-      {/* Resultados */}
+      <Box sx={{ maxWidth: 500, mx: "auto", mb: 4 }}>
+        <FormControl fullWidth>
+          <InputLabel id="lblComponentes">Materiales</InputLabel>
+          <Select
+            labelId="lblComponentes"
+            id="lstComponentes"
+            value={materialSeleccionado}
+            label="Componente a seleccionar"
+            onChange={handleMaterialChange}
+          >
+            {materiales.map((material) => (
+              <MenuItem
+                key={material}
+                value={material}
+              >
+                {material}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </Box>
+
       <Box>
         {isMobile || isTablet ? (
           // Vista de cards para móvil y tablet
           <Box sx={{ px: { xs: 1, sm: 2 } }}>
-            {muebles.length === 0 ? (
+            {componentes.length === 0 ? (
               <Box sx={{ textAlign: 'center', py: 4 }}>
                 <Typography variant="h6" color="text.secondary">
-                  No se encontraron muebles
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                  Intenta con otros términos de búsqueda
+                  No se encontraron componentes
                 </Typography>
               </Box>
             ) : (
-              muebles.map((mueble) => (
-                <MuebleCard key={mueble.id_mueble} mueble={mueble} />
+              componentes.map((componente) => (
+                <ComponenteCard key={componente.id_componente} componente={componente} />
               ))
             )}
           </Box>
         ) : (
-          // Vista de tabla para desktop
-          <TableContainer
-            component={Paper}
-            sx={{
-              my: 2,
-              mx: { xs: 1, sm: 2, lg: 4 },
-              borderRadius: 2,
-              boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
-            }}
-          >
+          <TableContainer component={Paper} sx={{
+            my: 2,
+            mx: { xs: 1, sm: 2, lg: 4 },
+            borderRadius: 2,
+            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+          }} id="table-container">
             <Table sx={{ minWidth: 650 }} aria-label="simple table">
               <TableHead sx={{ backgroundColor: "#e2d0c6" }}>
                 <TableRow>
                   <TableCell align="center" sx={{ fontWeight: 'bold' }}>NOMBRE</TableCell>
-                  <TableCell align="center" sx={{ fontWeight: 'bold' }}>PRECIO BASE</TableCell>
-                  <TableCell align="center" sx={{ fontWeight: 'bold' }}>FECHA ENTREGA</TableCell>
-                  <TableCell align="center" sx={{ fontWeight: 'bold' }}>MONTAJE</TableCell>
-                  <TableCell align="center" sx={{ fontWeight: 'bold' }}>EMPRESA</TableCell>
-                  <TableCell align="center" sx={{ fontWeight: 'bold' }}>DETALLES</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 'bold' }}>PRECIO</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 'bold' }}>FECHA DE IMPORTACIÓN</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 'bold' }}>CANTIDAD</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 'bold' }}>MATERIAL</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 'bold' }}>DESCRIPCIÓN</TableCell>
                   {!isEmpresa && (
-                    <TableCell align="center" sx={{ fontWeight: 'bold' }}>AGREGAR AL CARRITO</TableCell>
+                    <>
+                      <TableCell align="center" sx={{ fontWeight: 'bold' }}>AGREGAR AL CARRITO</TableCell>
+                    </>
                   )}
                   {isEmpresa && (
                     <>
@@ -480,85 +533,74 @@ function BuscarMueble() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {muebles.map((row) => (
+                {componentes.map((row) => (
                   <TableRow
-                    key={row.id_mueble}
+                    key={row.id_componente}
                     sx={{
-                      "&:last-child td, &:last-child th": { border: 0 },
-                      '&:hover': {
+                      "&:last-child td, &:last-child th": { border: 0 }, '&:hover': {
                         backgroundColor: 'rgba(0, 0, 0, 0.02)'
                       }
                     }}
                   >
                     <TableCell align="center">{row.nombre}</TableCell>
-                    <TableCell align="center">{row.precio_base + "€"}</TableCell>
-                    <TableCell align="center">{row.fecha_entrega}</TableCell>
+                    <TableCell align="center">{row.precio + "€"}</TableCell>
+                    <TableCell align="center">{row.fecha_importacion}</TableCell>
                     <TableCell align="center">
                       <Chip
-                        label={row.requiere_montar ? "Sí" : "No"}
+                        label={row.cantidad}
                         size="small"
-                        color={row.requiere_montar ? "warning" : "success"}
-                        variant="outlined"
+                        color={row.cantidad > 0 ? "success" : "error"}
                       />
                     </TableCell>
-                    <TableCell align="center">{row.id_empresa_empresa?.nombre_empresa}</TableCell>
+                    <TableCell align="center">{row.material}</TableCell>
                     <TableCell align="center">
                       <IconButton
-                        onClick={() => navigate("/" + row.id_mueble)}
+                        onClick={() => handleOpenModal(row.descripcion)}
                         sx={{ color: "#da6429" }}
                       >
                         <InfoIcon />
                       </IconButton>
                     </TableCell>
                     {!isEmpresa && (
-                      <TableCell align="center">
-                        <Tooltip title={
-                          tieneProducto(row.id_mueble, 'mueble') ?
-                            "Ya está en el carrito" :
-                            "Agregar al carrito"
-                        }>
-                          <span>
-                            <IconButton
-                              onClick={() => handleAgregarAlCarrito(row)}
-                              sx={{
-                                color: tieneProducto(row.id_mueble, 'mueble') ? "#4caf50" : "#da6429",
-                                '&:disabled': {
-                                  color: '#ccc'
-                                }
-                              }}
-                            >
-                              <AddShoppingCartIcon />
-                            </IconButton>
-                          </span>
-                        </Tooltip>
-                      </TableCell>
+                      <>
+                        <TableCell align="center">
+                          <Tooltip title={
+                            row.cantidad === 0 ? "Sin stock" :
+                              tieneProducto(row.id_componente, 'componente') ? "Ya está en el carrito" :
+                                "Agregar al carrito"
+                          }>
+                            <span>
+                              <IconButton
+                                onClick={() => handleAgregarAlCarrito(row)}
+                                disabled={row.cantidad === 0}
+                                sx={{
+                                  color: tieneProducto(row.id_componente, 'componente') ? "#4caf50" : "#da6429",
+                                  '&:disabled': {
+                                    color: '#ccc'
+                                  }
+                                }}
+                              >
+                                <AddShoppingCartIcon />
+                              </IconButton>
+                            </span>
+                          </Tooltip>
+                        </TableCell>
+                      </>
                     )}
                     {isEmpresa && (
                       <>
                         <TableCell align="center">
                           <IconButton
-                            onClick={() => handleDelete(row.id_mueble)}
-                            disabled={!(user?.id_empresa === row.id_empresa)}
-                            sx={{
-                              color: "#d32f2f",
-                              '&:disabled': {
-                                color: '#ccc'
-                              }
-                            }}
+                            onClick={() => handleDelete(row.id_componente)}
+                            sx={{ color: "#d32f2f" }}
                           >
                             <DeleteIcon />
                           </IconButton>
                         </TableCell>
                         <TableCell align="center">
                           <IconButton
-                            onClick={() => navigate("/modificarmueble/" + row.id_mueble)}
-                            disabled={!(user?.id_empresa === row.id_empresa)}
-                            sx={{
-                              color: "#666",
-                              '&:disabled': {
-                                color: '#ccc'
-                              }
-                            }}
+                            onClick={() => navigate("/modificarcomponente/" + row.id_componente)}
+                            sx={{ color: "#666" }}
                           >
                             <EditIcon />
                           </IconButton>
@@ -571,6 +613,61 @@ function BuscarMueble() {
             </Table>
           </TableContainer>
         )}
+
+        {/* Modal de descripción */}
+        <Modal
+          open={openModal}
+          onClose={handleCloseModal}
+          aria-labelledby="modal-title"
+          aria-describedby="modal-description"
+        >
+          <Paper sx={modalStyle}>
+            <Box sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              mb: 2
+            }}>
+              <Typography
+                id="modal-title"
+                variant="h6"
+                component="h2"
+                sx={{ fontSize: { xs: '1.1rem', sm: '1.25rem' } }}
+              >
+                Descripción
+              </Typography>
+              <IconButton
+                onClick={handleCloseModal}
+                size="small"
+                sx={{ color: 'grey.500' }}
+              >
+                <CloseIcon />
+              </IconButton>
+            </Box>
+
+            <Box sx={{
+              mb: 3,
+              maxHeight: '400px',
+              overflowY: 'auto',
+              pr: 1
+            }}>
+              <Typography
+                id="modal-description"
+                variant="body1"
+                sx={{
+                  whiteSpace: 'pre-wrap',
+                  wordWrap: 'break-word',
+                  hyphens: 'auto',
+                  lineHeight: 1.6,
+                  textAlign: 'justify',
+                  fontSize: { xs: '0.9rem', sm: '1rem' }
+                }}
+              >
+                {modalContent}
+              </Typography>
+            </Box>
+          </Paper>
+        </Modal>
 
         {/* Modal del carrito */}
         {!isEmpresa && (
@@ -942,8 +1039,8 @@ function BuscarMueble() {
           </Button>
         </DialogActions>
       </Dialog>
-    </Container>
+    </Container >
   );
 }
 
-export default BuscarMueble;
+export default ListadoComponentesMateriales;

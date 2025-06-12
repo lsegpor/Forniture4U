@@ -1,6 +1,6 @@
 import { Box, TextField, Button, Typography, Container, Paper } from "@mui/material";
-import { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router";
+import { useState } from "react";
+import { useNavigate } from "react-router";
 import DatePicker, { registerLocale } from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { es } from "date-fns/locale";
@@ -9,21 +9,18 @@ import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
-import { apiUrl } from "../config";
-import useUserStore from "../stores/useUserStore";
+import { apiUrl } from '../../config';
+import useUserStore from "../../stores/useUserStore";
 
 // Registrar el idioma español
 registerLocale("es", es);
 
 /**
- * Componente para modificar un componente existente.
- * @returns {JSX.Element} El componente de modificación de componente.
+ * Componente para dar de alta un componente.
+ * @returns {JSX.Element} El componente de alta de componente.
  */
-function ModificarComponente() {
-  const params = useParams();
-
+function AltaComponente() {
   const [datos, setDatos] = useState({
-    id_componente: params.id_componente,
     nombre: "",
     precio: "",
     fecha_importacion: "",
@@ -37,25 +34,16 @@ function ModificarComponente() {
   const [message, setMessage] = useState("");
 
   const isEmpresa = useUserStore((state) => state.isEmpresa);
+  const user = useUserStore((state) => state.user);
 
-  useEffect(() => {
-    async function getComponenteById() {
-      let response = await fetch(
-        apiUrl + "/componentes/" + datos.id_componente
-      );
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
 
-      if (response.ok) {
-        let data = await response.json();
-        console.log("Datos recibidos de la API:", data);
-        setDatos(data.datos);
-      } else if (response.status === 404) {
-        setMessage(`El componente no se pudo encontrar`);
-        handleClickOpen();
-      }
-    }
-
-    getComponenteById();
-  }, [params.id_componente, datos.id_componente, navigate]);
+  const handleClose = () => {
+    setOpen(false);
+    navigate("/");
+  };
 
   /**
    * Maneja el envío del formulario.
@@ -64,26 +52,30 @@ function ModificarComponente() {
   const handleSubmit = async (e) => {
     // No hacemos submit
     e.preventDefault();
+
+    // Verificar que el usuario sea una empresa y tenga ID
+    if (!isEmpresa || !user || !user.id_empresa) {
+      setMessage("Solo empresas pueden crear muebles");
+      handleClickOpen();
+      return;
+    }
+
     // Enviamos los datos con fetch
     try {
-      const response = await fetch(
-        apiUrl + "/componentes/" + datos.id_componente,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(datos),
-        }
-      );
+      const response = await fetch(apiUrl + "/componentes", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(datos),
+      });
 
       if (response.ok) {
-        setMessage(`Componente modificado correctamente`);
-        handleClickOpen();
+        setMessage(`Componente creado correctamente`);
       } else {
-        setMessage(`Error al modificar el componente`);
-        handleClickOpen();
+        setMessage(`Error al crear el componente`);
       }
+      handleClickOpen();
     } catch (error) {
       console.log("Error", error);
       setMessage("Error al realizar la solicitud");
@@ -92,40 +84,27 @@ function ModificarComponente() {
   };
 
   /**
-   * Maneja el cambio de los campos del formulario.
-   * @param {Event} e - El evento de cambio del campo.
+   * Maneja el cambio en los campos del formulario.
+   * @param {Event} e - El evento de cambio.
    */
   const handleChange = (e) => {
+    const { name, value } = e.target;
+
     setDatos({
       ...datos,
-      [e.target.name]: e.target.value,
+      [name]: value,
     });
   };
 
   /**
-   * Maneja el cambio de la fecha de importación.
-   * @param {Date} date - La nueva fecha de importación.
+   * Maneja el cambio en el campo de fecha.
+   * @param {Date} date - La nueva fecha seleccionada.
    */
   const handleDateChange = (date) => {
     setDatos({
       ...datos,
       fecha_importacion: date ? date.toISOString().split("T")[0] : "", // Guardamos en formato yyyy-MM-dd
     });
-  };
-
-  /**
-   * Abre el diálogo de estado.
-   */
-  const handleClickOpen = () => {
-    setOpen(true);
-  };
-
-  /**
-   * Cierra el diálogo de estado y navega a la página anterior.
-   */
-  const handleClose = () => {
-    setOpen(false);
-    navigate(-1);
   };
 
   if (!isEmpresa()) {
@@ -169,7 +148,6 @@ function ModificarComponente() {
             maxWidth: '100%'
           }}
         >
-
           <Typography
             variant="h4"
             align="center"
@@ -183,7 +161,7 @@ function ModificarComponente() {
               px: 1 // Padding horizontal para evitar overflow
             }}
           >
-            Modificar componente
+            Alta de Componente
           </Typography>
 
           <Box
@@ -337,7 +315,7 @@ function ModificarComponente() {
         </Paper>
       </Container>
 
-      {/* Estilos personalizados para el datepicker */}
+      {/* Estilos personalizados para el datepicker responsive */}
       <style>{`
         .custom-datepicker {
           width: 100%;
@@ -496,4 +474,4 @@ function ModificarComponente() {
   );
 }
 
-export default ModificarComponente;
+export default AltaComponente;

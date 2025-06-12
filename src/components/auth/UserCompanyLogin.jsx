@@ -12,8 +12,8 @@ import {
 } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { useNavigate } from 'react-router';
-import useUserStore from "../stores/useUserStore";
-import { apiUrl } from '../config';
+import useUserStore from "../../stores/useUserStore";
+import { apiUrl } from '../../config';
 
 function UserCompanyLogin() {
 

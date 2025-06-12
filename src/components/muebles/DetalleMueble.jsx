@@ -11,9 +11,9 @@ import {
     ListItem
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import { apiUrl } from "../config";
+import { apiUrl } from "../../config";
 import Grid from "@mui/material/Grid2";
-import defaultImage from '../assets/default.jpeg'; // Ajusta la ruta según tu estructura
+import defaultImage from '../../assets/default.jpeg'; // Ajusta la ruta según tu estructura
 
 function DetalleMueble() {
     const params = useParams();

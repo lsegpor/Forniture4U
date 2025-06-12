@@ -60,11 +60,11 @@ import {
     Schedule as ScheduleIcon,
     Done as DoneIcon
 } from '@mui/icons-material';
-import useUserStore from "../stores/useUserStore";
+import useUserStore from "../../stores/useUserStore";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
-import { apiUrl } from "../config";
-import "../style/Perfiles.css";
+import { apiUrl } from "../../config";
+import "../../style/Perfiles.css";
 
 /**
  * Componente del perfil de usuario con pestañas para datos personales e historial de pedidos.
