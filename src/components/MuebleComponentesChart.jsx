@@ -416,22 +416,23 @@ function MuebleComponentesChart() {
           </Box>
 
           {/* Botón de exportar responsive */}
-          <Button
-            variant="contained"
-            fullWidth={isMobile}
-            sx={{
-              backgroundColor: "#da6429",
-              maxWidth: { xs: '100%', sm: '200px' },
-              height: { xs: '44px', sm: '48px' },
-              fontSize: { xs: '0.9rem', sm: '1rem' },
-              '&:hover': {
-                backgroundColor: "#c55a24"
-              }
-            }}
-            onClick={exportarPDF}
-          >
-            Exportar a PDF
-          </Button>
+          {!isMobile && !isTablet && (
+            <Button
+              variant="contained"
+              sx={{
+                backgroundColor: "#da6429",
+                maxWidth: { xs: '100%', sm: '200px' },
+                height: { xs: '44px', sm: '48px' },
+                fontSize: { xs: '0.9rem', sm: '1rem' },
+                '&:hover': {
+                  backgroundColor: "#c55a24"
+                }
+              }}
+              onClick={exportarPDF}
+            >
+              Exportar a PDF
+            </Button>
+          )}
         </>
       )}
     </Container>

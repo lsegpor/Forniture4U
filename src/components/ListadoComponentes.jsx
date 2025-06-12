@@ -636,23 +636,25 @@ function ListadoComponentes() {
           </Paper>
         </Modal>
 
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "center",
-            gap: 2,
-            mt: 3,
-            mb: 4,
-          }}
-        >
-          <Button
-            variant="contained"
-            sx={{ backgroundColor: "#da6429" }}
-            onClick={printToPDFImage}
+        {!isMobile && !isTablet && (
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              gap: 2,
+              mt: 3,
+              mb: 4,
+            }}
           >
-            Imprimir a PDF (Imagen)
-          </Button>
-        </Box>
+            <Button
+              variant="contained"
+              sx={{ backgroundColor: "#da6429" }}
+              onClick={printToPDFImage}
+            >
+              Imprimir a PDF (Imagen)
+            </Button>
+          </Box>
+        )}
 
         {/* Modal del carrito */}
         {!isEmpresa && (

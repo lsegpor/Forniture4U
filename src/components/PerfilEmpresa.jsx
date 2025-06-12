@@ -1475,17 +1475,19 @@ function PerfilEmpresa() {
                         py: { xs: 2, sm: 2 }
                     }}
                 >
-                    <Button
-                        sx={{
-                            color: "#da6429",
-                            fontSize: { xs: '0.9rem', sm: '1rem' },
-                            order: { xs: 2, sm: 1 }
-                        }}
-                        onClick={printToPDFImage}
-                        fullWidth={isMobile}
-                    >
-                        Imprimir a PDF (Imagen)
-                    </Button>
+                    {!isMobile && !isTablet && (
+                        <Button
+                            sx={{
+                                color: "#da6429",
+                                fontSize: { xs: '0.9rem', sm: '1rem' },
+                                order: { xs: 2, sm: 1 }
+                            }}
+                            onClick={printToPDFImage}
+                            fullWidth={isMobile}
+                        >
+                            Imprimir a PDF (Imagen)
+                        </Button>
+                    )}
                     <Button
                         onClick={handleCloseDetalles}
                         sx={{

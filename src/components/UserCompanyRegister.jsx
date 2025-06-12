@@ -101,6 +101,7 @@ function UserCompanyRegister() {
             setErrors({
                 tabError: "No puedes registrarte como empresa si tienes productos en el carrito. Las empresas no pueden realizar pedidos. Por favor, registrate como usuario para completar tu compra."
             });
+            alert("No puedes registrarte como empresa si tienes productos en el carrito. Vacíalo o registrate como usuario para completar tu compra.");
             return; // No cambiar de tab
         }
 

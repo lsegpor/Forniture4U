@@ -191,13 +191,14 @@ function Carrusel() {
             style={{
               backgroundColor: "#da6429",
               border: "none",
-              padding: isMobile ? "0.6rem 1.5rem" : isTablet ? "0.75rem 2rem" : "0.8rem 2.5rem",
+              padding: isMobile ? "0.5rem 1rem" : isTablet ? "0.75rem 2rem" : "0.75rem 2rem",
               fontSize: isMobile ? "0.9rem" : isTablet ? "1rem" : "1.1rem",
               fontWeight: "500",
               borderRadius: "6px",
               boxShadow: "0 2px 8px rgba(218, 100, 41, 0.3)",
               transition: "all 0.3s ease",
-              textTransform: "none"
+              textTransform: "none",
+              marginTop: isMobile ? "0.2rem" : isTablet ? "0.2rem" : "2rem"
             }}
             onMouseEnter={(e) => {
               e.target.style.backgroundColor = "#c55a24";
