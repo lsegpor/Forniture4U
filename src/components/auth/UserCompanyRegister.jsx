@@ -965,7 +965,7 @@ function UserCompanyRegister() {
                             border: '1px solid #4caf50'
                         }}>
                             <Typography variant="body2" color="success.main" fontWeight="bold">
-                                🛒 Tu carrito está listo para el checkout
+                                🛒 Tu carrito está listo para el pago
                             </Typography>
                         </Box>
                     )}

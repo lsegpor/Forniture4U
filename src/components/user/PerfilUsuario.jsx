@@ -91,7 +91,7 @@ function PerfilUsuario() {
     const [confirmandoEntrega, setConfirmandoEntrega] = useState(false);
 
     const theme = useTheme();
-    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     const isTablet = useMediaQuery(theme.breakpoints.down('lg'));
 
     const user = useUserStore((state) => state.user);

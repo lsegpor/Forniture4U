@@ -15,7 +15,7 @@ import foto3 from "../../assets/ikea3.jpeg";
  */
 function Carrusel() {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const isTablet = useMediaQuery(theme.breakpoints.down('lg'));
 
   return (
@@ -52,25 +52,25 @@ function Carrusel() {
               className={isMobile ? "carousel-caption d-block" : "carousel-caption d-none d-md-block"}
               style={{
                 ...captionStyle,
-                padding: isMobile ? "8px 12px" : isTablet ? "12px 16px" : "15px 20px",
+                padding: isMobile ? "6px 8px" : isTablet ? "12px 16px" : "15px 20px",
                 borderRadius: isMobile ? "4px" : "6px",
-                bottom: isMobile ? "10px" : "20px",
-                left: isMobile ? "5%" : "10%",
-                right: isMobile ? "5%" : "10%",
-                fontSize: isMobile ? "0.85rem" : isTablet ? "0.95rem" : "1rem"
+                bottom: isMobile ? "25px" : "20px", // Más espacio desde abajo en móvil
+                left: isMobile ? "8%" : "10%",
+                right: isMobile ? "8%" : "10%",
+                fontSize: isMobile ? "0.75rem" : isTablet ? "0.95rem" : "1rem"
               }}
             >
               <h5 style={{
-                fontSize: isMobile ? "1.1rem" : isTablet ? "1.3rem" : "1.5rem",
-                marginBottom: isMobile ? "0.3rem" : "0.5rem",
+                fontSize: isMobile ? "0.9rem" : isTablet ? "1.3rem" : "1.5rem", // Título más pequeño en móvil
+                marginBottom: isMobile ? "0.2rem" : "0.5rem",
                 fontWeight: "bold"
               }}>
                 Bienvenidos a Forniture4U
               </h5>
               <p style={{
                 margin: 0,
-                fontSize: isMobile ? "0.8rem" : isTablet ? "0.9rem" : "1rem",
-                lineHeight: isMobile ? "1.2" : "1.4"
+                fontSize: isMobile ? "0.7rem" : isTablet ? "0.9rem" : "1rem", // Texto más pequeño en móvil
+                lineHeight: isMobile ? "1.1" : "1.4"
               }}>
                 Los mejores muebles a tu disposición
               </p>
@@ -91,25 +91,25 @@ function Carrusel() {
               className={isMobile ? "carousel-caption d-block" : "carousel-caption d-none d-md-block"}
               style={{
                 ...captionStyle,
-                padding: isMobile ? "8px 12px" : isTablet ? "12px 16px" : "15px 20px",
+                padding: isMobile ? "6px 8px" : isTablet ? "12px 16px" : "15px 20px",
                 borderRadius: isMobile ? "4px" : "6px",
-                bottom: isMobile ? "10px" : "20px",
-                left: isMobile ? "5%" : "10%",
-                right: isMobile ? "5%" : "10%",
-                fontSize: isMobile ? "0.85rem" : isTablet ? "0.95rem" : "1rem"
+                bottom: isMobile ? "25px" : "20px",
+                left: isMobile ? "8%" : "10%",
+                right: isMobile ? "8%" : "10%",
+                fontSize: isMobile ? "0.75rem" : isTablet ? "0.95rem" : "1rem"
               }}
             >
               <h5 style={{
-                fontSize: isMobile ? "1.1rem" : isTablet ? "1.3rem" : "1.5rem",
-                marginBottom: isMobile ? "0.3rem" : "0.5rem",
+                fontSize: isMobile ? "0.9rem" : isTablet ? "1.3rem" : "1.5rem",
+                marginBottom: isMobile ? "0.2rem" : "0.5rem",
                 fontWeight: "bold"
               }}>
                 Estilo y Comodidad
               </h5>
               <p style={{
                 margin: 0,
-                fontSize: isMobile ? "0.8rem" : isTablet ? "0.9rem" : "1rem",
-                lineHeight: isMobile ? "1.2" : "1.4"
+                fontSize: isMobile ? "0.7rem" : isTablet ? "0.9rem" : "1rem",
+                lineHeight: isMobile ? "1.1" : "1.4"
               }}>
                 Encuentra muebles únicos para tu hogar
               </p>
@@ -130,25 +130,25 @@ function Carrusel() {
               className={isMobile ? "carousel-caption d-block" : "carousel-caption d-none d-md-block"}
               style={{
                 ...captionStyle,
-                padding: isMobile ? "8px 12px" : isTablet ? "12px 16px" : "15px 20px",
+                padding: isMobile ? "6px 8px" : isTablet ? "12px 16px" : "15px 20px",
                 borderRadius: isMobile ? "4px" : "6px",
-                bottom: isMobile ? "10px" : "20px",
-                left: isMobile ? "5%" : "10%",
-                right: isMobile ? "5%" : "10%",
-                fontSize: isMobile ? "0.85rem" : isTablet ? "0.95rem" : "1rem"
+                bottom: isMobile ? "25px" : "20px",
+                left: isMobile ? "8%" : "10%",
+                right: isMobile ? "8%" : "10%",
+                fontSize: isMobile ? "0.75rem" : isTablet ? "0.95rem" : "1rem"
               }}
             >
               <h5 style={{
-                fontSize: isMobile ? "1.1rem" : isTablet ? "1.3rem" : "1.5rem",
-                marginBottom: isMobile ? "0.3rem" : "0.5rem",
+                fontSize: isMobile ? "0.9rem" : isTablet ? "1.3rem" : "1.5rem",
+                marginBottom: isMobile ? "0.2rem" : "0.5rem",
                 fontWeight: "bold"
               }}>
                 Calidad Garantizada
               </h5>
               <p style={{
                 margin: 0,
-                fontSize: isMobile ? "0.8rem" : isTablet ? "0.9rem" : "1rem",
-                lineHeight: isMobile ? "1.2" : "1.4"
+                fontSize: isMobile ? "0.7rem" : isTablet ? "0.9rem" : "1rem",
+                lineHeight: isMobile ? "1.1" : "1.4"
               }}>
                 Comodidad y durabilidad en cada producto
               </p>
@@ -177,7 +177,7 @@ function Carrusel() {
             fontSize: isMobile ? "0.95rem" : isTablet ? "1rem" : "1.1rem",
             lineHeight: isMobile ? "1.5" : "1.6",
             color: "#4f4f4f",
-            marginBottom: isMobile ? "1.5rem" : "2rem",
+            marginBottom: isMobile ? "1rem" : "2rem",
             maxWidth: isMobile ? "100%" : isTablet ? "90%" : "80%",
             margin: "0 auto"
           }}>
@@ -198,7 +198,7 @@ function Carrusel() {
               boxShadow: "0 2px 8px rgba(218, 100, 41, 0.3)",
               transition: "all 0.3s ease",
               textTransform: "none",
-              marginTop: isMobile ? "0.2rem" : isTablet ? "0.2rem" : "2rem"
+              marginTop: isMobile ? "1rem" : isTablet ? "0.2rem" : "2rem"
             }}
             onMouseEnter={(e) => {
               e.target.style.backgroundColor = "#c55a24";
@@ -230,14 +230,22 @@ function Carrusel() {
             height: 15px !important;
           }
           
+          /* Indicadores más pequeños y mejor posicionados */
           .carousel-indicators {
-            bottom: 5px !important;
+            bottom: 8px !important;
+            margin-bottom: 0 !important;
           }
           
           .carousel-indicators [data-bs-target] {
-            width: 8px !important;
-            height: 8px !important;
-            margin: 0 2px !important;
+            width: 6px !important;
+            height: 6px !important;
+            margin: 0 1px !important;
+            border-radius: 50% !important;
+            opacity: 0.6 !important;
+          }
+          
+          .carousel-indicators .active {
+            opacity: 1 !important;
           }
         }
 
@@ -251,6 +259,17 @@ function Carrusel() {
           .carousel-control-next-icon {
             width: 12px !important;
             height: 12px !important;
+          }
+          
+          /* Indicadores aún más pequeños en móviles muy pequeños */
+          .carousel-indicators {
+            bottom: 6px !important;
+          }
+          
+          .carousel-indicators [data-bs-target] {
+            width: 5px !important;
+            height: 5px !important;
+            margin: 0 1px !important;
           }
         }
 
@@ -286,14 +305,14 @@ function Carrusel() {
   );
 }
 
-// Estilo mejorado para las leyendas del carrusel
+// Estilo mejorado para las leyendas del carrusel - más compacto en móvil
 const captionStyle = {
-  backgroundColor: "rgba(0, 0, 0, 0.7)", // Fondo más oscuro para mejor legibilidad
+  backgroundColor: "rgba(0, 0, 0, 0.75)", // Fondo ligeramente más oscuro para mejor contraste
   color: "white",
   borderRadius: "6px",
-  backdropFilter: "blur(5px)", // Efecto de desenfoque para modernidad
-  border: "1px solid rgba(255, 255, 255, 0.1)", // Sutil borde para definición
-  textShadow: "0 1px 2px rgba(0, 0, 0, 0.8)", // Sombra de texto para legibilidad
+  backdropFilter: "blur(5px)",
+  border: "1px solid rgba(255, 255, 255, 0.1)",
+  textShadow: "0 1px 2px rgba(0, 0, 0, 0.8)",
 };
 
 export default Carrusel;

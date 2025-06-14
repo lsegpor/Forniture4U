@@ -63,7 +63,7 @@ function ListadoComponentesMateriales() {
   const [openLoginDialog, setOpenLoginDialog] = useState(false);
 
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const isTablet = useMediaQuery(theme.breakpoints.down('lg'));
 
   const navigate = useNavigate();
@@ -153,7 +153,7 @@ function ListadoComponentesMateriales() {
     }
 
     handleCloseCarritoModal();
-    navigate("/checkout");
+    navigate("/pedidopago");
   };
 
   const handleCloseLoginDialog = () => {
@@ -867,7 +867,7 @@ function ListadoComponentesMateriales() {
                         onClick={handleProcederCheckout}
                         fullWidth
                       >
-                        Proceder al Checkout
+                        Proceder al pago
                       </Button>
                     </Box>
                   </Box>
@@ -936,7 +936,7 @@ function ListadoComponentesMateriales() {
             fontSize: { xs: '1rem', sm: '1.1rem' },
             mb: 2
           }}>
-            Para proceder al checkout necesitas iniciar sesión
+            Para proceder al pago necesitas iniciar sesión
           </DialogContentText>
           <DialogContentText sx={{
             color: 'text.secondary',

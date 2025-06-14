@@ -33,8 +33,8 @@ function Menu() {
   const navigate = useNavigate();
 
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('lg'));
-  const isTablet = useMediaQuery(theme.breakpoints.down('xl'));
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isTablet = useMediaQuery(theme.breakpoints.down('lg'));
 
   // Obtener función de logout del carrito
   const { handleLogout: carritoLogout } = useCarritoStore();

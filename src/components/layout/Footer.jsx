@@ -8,7 +8,7 @@ import { useState } from "react";
  */
 function Footer() {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useMediaQuery(theme.breakpoints.down('xs'));
   const isTablet = useMediaQuery(theme.breakpoints.down('lg'));
 
   // Estados para controlar los dropdowns
@@ -33,33 +33,41 @@ function Footer() {
           <section
             className="p-4"
             style={{
-              padding: isMobile ? "2rem 1rem" : "2.5rem 1.5rem"
+              padding: "2rem 1rem"
             }}
           >
             <MDBContainer fluid>
               {/* Primera fila: Enlaces y Soporte */}
-              <MDBRow className="mb-4 g-2">
-                <MDBCol xs={6} sm={6} className="text-center">
+              <div style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: "0.25rem",
+                marginBottom: "0.5rem"
+              }}>
+                {/* Enlaces */}
+                <div style={{ position: "relative" }}>
                   <div
                     className="dropdown-trigger"
                     onClick={() => toggleDropdown('enlaces')}
                     style={{
                       cursor: "pointer",
-                      padding: isMobile ? "0.75rem 0.5rem" : "1rem",
+                      padding: "0.75rem 0.25rem",
                       backgroundColor: activeDropdown === 'enlaces' ? 'rgba(218, 100, 41, 0.1)' : 'transparent',
                       borderRadius: "8px",
                       transition: "background-color 0.3s ease",
-                      minHeight: "60px",
+                      height: "50px",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      flexDirection: "column"
+                      textAlign: "center",
+                      width: "100%"
                     }}
                   >
                     <h6
                       className="text-uppercase fw-bold mb-0"
                       style={{
-                        fontSize: isMobile ? "0.9rem" : "1.1rem"
+                        fontSize: "0.7rem",
+                        lineHeight: "1.2"
                       }}
                     >
                       Enlaces <MDBIcon icon={activeDropdown === 'enlaces' ? "chevron-up" : "chevron-down"} className="ms-1" size="sm" />
@@ -70,20 +78,26 @@ function Footer() {
                     <div
                       className="dropdown-content"
                       style={{
+                        position: "absolute",
+                        top: "100%",
+                        left: "-20%",
+                        right: "-20%",
+                        zIndex: 1000,
                         marginTop: "0.5rem",
-                        padding: "1rem 0.5rem",
-                        backgroundColor: "rgba(255, 255, 255, 0.1)",
+                        padding: "1rem 0.75rem",
+                        backgroundColor: "rgba(255, 255, 255, 0.95)",
                         borderRadius: "8px",
+                        boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
                         animation: "slideDown 0.3s ease"
                       }}
                     >
-                      <div style={{ lineHeight: "2" }}>
+                      <div style={{ lineHeight: "1.8" }}>
                         <p style={{ marginBottom: "0.5rem" }}>
                           <a
                             href="#!"
                             className="text-reset text-decoration-none"
                             style={{
-                              fontSize: isMobile ? "0.8rem" : "0.9rem",
+                              fontSize: "0.7rem",
                               transition: "color 0.3s ease",
                             }}
                             onMouseEnter={(e) => e.target.style.color = "#da6429"}
@@ -97,7 +111,7 @@ function Footer() {
                             href="#!"
                             className="text-reset text-decoration-none"
                             style={{
-                              fontSize: isMobile ? "0.8rem" : "0.9rem",
+                              fontSize: "0.7rem",
                               transition: "color 0.3s ease",
                             }}
                             onMouseEnter={(e) => e.target.style.color = "#da6429"}
@@ -111,7 +125,7 @@ function Footer() {
                             href="#!"
                             className="text-reset text-decoration-none"
                             style={{
-                              fontSize: isMobile ? "0.8rem" : "0.9rem",
+                              fontSize: "0.7rem",
                               transition: "color 0.3s ease",
                             }}
                             onMouseEnter={(e) => e.target.style.color = "#da6429"}
@@ -120,12 +134,12 @@ function Footer() {
                             Ofertas
                           </a>
                         </p>
-                        <p style={{ marginBottom: "0.5rem" }}>
+                        <p style={{ marginBottom: "0" }}>
                           <a
                             href="#!"
                             className="text-reset text-decoration-none"
                             style={{
-                              fontSize: isMobile ? "0.8rem" : "0.9rem",
+                              fontSize: "0.7rem",
                               transition: "color 0.3s ease",
                             }}
                             onMouseEnter={(e) => e.target.style.color = "#da6429"}
@@ -137,29 +151,32 @@ function Footer() {
                       </div>
                     </div>
                   )}
-                </MDBCol>
+                </div>
 
-                <MDBCol xs={6} sm={6} className="text-center">
+                {/* Soporte */}
+                <div style={{ position: "relative" }}>
                   <div
                     className="dropdown-trigger"
                     onClick={() => toggleDropdown('soporte')}
                     style={{
                       cursor: "pointer",
-                      padding: isMobile ? "0.75rem 0.5rem" : "1rem",
+                      padding: "0.75rem 0.25rem",
                       backgroundColor: activeDropdown === 'soporte' ? 'rgba(218, 100, 41, 0.1)' : 'transparent',
                       borderRadius: "8px",
                       transition: "background-color 0.3s ease",
-                      minHeight: "60px",
+                      height: "50px",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      flexDirection: "column"
+                      textAlign: "center",
+                      width: "100%"
                     }}
                   >
                     <h6
                       className="text-uppercase fw-bold mb-0"
                       style={{
-                        fontSize: isMobile ? "0.9rem" : "1.1rem"
+                        fontSize: "0.7rem",
+                        lineHeight: "1.2"
                       }}
                     >
                       Soporte <MDBIcon icon={activeDropdown === 'soporte' ? "chevron-up" : "chevron-down"} className="ms-1" size="sm" />
@@ -170,20 +187,26 @@ function Footer() {
                     <div
                       className="dropdown-content"
                       style={{
+                        position: "absolute",
+                        top: "100%",
+                        left: "-20%",
+                        right: "-20%",
+                        zIndex: 1000,
                         marginTop: "0.5rem",
-                        padding: "1rem 0.5rem",
-                        backgroundColor: "rgba(255, 255, 255, 0.1)",
+                        padding: "1rem 0.75rem",
+                        backgroundColor: "rgba(255, 255, 255, 0.95)",
                         borderRadius: "8px",
+                        boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
                         animation: "slideDown 0.3s ease"
                       }}
                     >
-                      <div style={{ lineHeight: "2" }}>
+                      <div style={{ lineHeight: "1.8" }}>
                         <p style={{ marginBottom: "0.5rem" }}>
                           <a
                             href="#!"
                             className="text-reset text-decoration-none"
                             style={{
-                              fontSize: isMobile ? "0.8rem" : "0.9rem",
+                              fontSize: "0.7rem",
                               transition: "color 0.3s ease",
                             }}
                             onMouseEnter={(e) => e.target.style.color = "#da6429"}
@@ -197,7 +220,7 @@ function Footer() {
                             href="#!"
                             className="text-reset text-decoration-none"
                             style={{
-                              fontSize: isMobile ? "0.8rem" : "0.9rem",
+                              fontSize: "0.7rem",
                               transition: "color 0.3s ease",
                             }}
                             onMouseEnter={(e) => e.target.style.color = "#da6429"}
@@ -211,7 +234,7 @@ function Footer() {
                             href="#!"
                             className="text-reset text-decoration-none"
                             style={{
-                              fontSize: isMobile ? "0.8rem" : "0.9rem",
+                              fontSize: "0.7rem",
                               transition: "color 0.3s ease",
                             }}
                             onMouseEnter={(e) => e.target.style.color = "#da6429"}
@@ -220,12 +243,12 @@ function Footer() {
                             Garantía
                           </a>
                         </p>
-                        <p style={{ marginBottom: "0.5rem" }}>
+                        <p style={{ marginBottom: "0" }}>
                           <a
                             href="#!"
                             className="text-reset text-decoration-none"
                             style={{
-                              fontSize: isMobile ? "0.8rem" : "0.9rem",
+                              fontSize: "0.7rem",
                               transition: "color 0.3s ease",
                             }}
                             onMouseEnter={(e) => e.target.style.color = "#da6429"}
@@ -237,32 +260,39 @@ function Footer() {
                       </div>
                     </div>
                   )}
-                </MDBCol>
-              </MDBRow>
+                </div>
+              </div>
 
               {/* Segunda fila: Contacto y Síguenos */}
-              <MDBRow className="g-2">
-                <MDBCol xs={6} sm={6} className="text-center">
+              <div style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: "0.25rem"
+              }}>
+                {/* Contacto */}
+                <div style={{ position: "relative" }}>
                   <div
                     className="dropdown-trigger"
                     onClick={() => toggleDropdown('contacto')}
                     style={{
                       cursor: "pointer",
-                      padding: isMobile ? "0.75rem 0.5rem" : "1rem",
+                      padding: "0.75rem 0.25rem",
                       backgroundColor: activeDropdown === 'contacto' ? 'rgba(218, 100, 41, 0.1)' : 'transparent',
                       borderRadius: "8px",
                       transition: "background-color 0.3s ease",
-                      minHeight: "60px",
+                      height: "50px",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      flexDirection: "column"
+                      textAlign: "center",
+                      width: "100%"
                     }}
                   >
                     <h6
                       className="text-uppercase fw-bold mb-0"
                       style={{
-                        fontSize: isMobile ? "0.9rem" : "1.1rem"
+                        fontSize: "0.7rem",
+                        lineHeight: "1.2"
                       }}
                     >
                       Contacto <MDBIcon icon={activeDropdown === 'contacto' ? "chevron-up" : "chevron-down"} className="ms-1" size="sm" />
@@ -273,21 +303,27 @@ function Footer() {
                     <div
                       className="dropdown-content"
                       style={{
+                        position: "absolute",
+                        top: "100%",
+                        left: "-20%",
+                        right: "-20%",
+                        zIndex: 1000,
                         marginTop: "0.5rem",
-                        padding: "1rem 0.5rem",
-                        backgroundColor: "rgba(255, 255, 255, 0.1)",
+                        padding: "1rem 0.75rem",
+                        backgroundColor: "rgba(255, 255, 255, 0.95)",
                         borderRadius: "8px",
+                        boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
                         animation: "slideDown 0.3s ease"
                       }}
                     >
-                      <div style={{ lineHeight: "1.8" }}>
+                      <div style={{ lineHeight: "1.6" }}>
                         <p
                           style={{
-                            marginBottom: "0.75rem",
-                            fontSize: isMobile ? "0.75rem" : "0.9rem",
+                            marginBottom: "0.5rem",
+                            fontSize: "0.65rem",
                             display: "flex",
                             alignItems: "flex-start",
-                            justifyContent: "center",
+                            justifyContent: "flex-start",
                             textAlign: "left"
                           }}
                         >
@@ -295,7 +331,7 @@ function Footer() {
                             icon="home"
                             className="me-2 mt-1"
                             style={{
-                              fontSize: isMobile ? "0.8rem" : "1rem",
+                              fontSize: "0.65rem",
                               minWidth: "1rem",
                               flexShrink: 0
                             }}
@@ -304,11 +340,11 @@ function Footer() {
                         </p>
                         <p
                           style={{
-                            marginBottom: "0.75rem",
-                            fontSize: isMobile ? "0.75rem" : "0.9rem",
+                            marginBottom: "0.5rem",
+                            fontSize: "0.65rem",
                             display: "flex",
                             alignItems: "flex-start",
-                            justifyContent: "center",
+                            justifyContent: "flex-start",
                             textAlign: "left"
                           }}
                         >
@@ -316,7 +352,7 @@ function Footer() {
                             icon="envelope"
                             className="me-2 mt-1"
                             style={{
-                              fontSize: isMobile ? "0.8rem" : "1rem",
+                              fontSize: "0.65rem",
                               minWidth: "1rem",
                               flexShrink: 0
                             }}
@@ -326,7 +362,8 @@ function Footer() {
                             className="text-reset text-decoration-none"
                             style={{
                               transition: "color 0.3s ease",
-                              wordBreak: "break-all"
+                              wordBreak: "break-word",
+                              fontSize: "0.6rem"
                             }}
                             onMouseEnter={(e) => e.target.style.color = "#da6429"}
                             onMouseLeave={(e) => e.target.style.color = "#332f2d"}
@@ -336,11 +373,11 @@ function Footer() {
                         </p>
                         <p
                           style={{
-                            marginBottom: "0.75rem",
-                            fontSize: isMobile ? "0.75rem" : "0.9rem",
+                            marginBottom: "0.5rem",
+                            fontSize: "0.65rem",
                             display: "flex",
                             alignItems: "flex-start",
-                            justifyContent: "center",
+                            justifyContent: "flex-start",
                             textAlign: "left"
                           }}
                         >
@@ -348,7 +385,7 @@ function Footer() {
                             icon="phone"
                             className="me-2 mt-1"
                             style={{
-                              fontSize: isMobile ? "0.8rem" : "1rem",
+                              fontSize: "0.65rem",
                               minWidth: "1rem",
                               flexShrink: 0
                             }}
@@ -356,7 +393,10 @@ function Footer() {
                           <a
                             href="tel:+34900123456"
                             className="text-reset text-decoration-none"
-                            style={{ transition: "color 0.3s ease" }}
+                            style={{
+                              transition: "color 0.3s ease",
+                              fontSize: "0.65rem"
+                            }}
                             onMouseEnter={(e) => e.target.style.color = "#da6429"}
                             onMouseLeave={(e) => e.target.style.color = "#332f2d"}
                           >
@@ -365,11 +405,11 @@ function Footer() {
                         </p>
                         <p
                           style={{
-                            marginBottom: "0.75rem",
-                            fontSize: isMobile ? "0.75rem" : "0.9rem",
+                            marginBottom: "0",
+                            fontSize: "0.65rem",
                             display: "flex",
                             alignItems: "flex-start",
-                            justifyContent: "center",
+                            justifyContent: "flex-start",
                             textAlign: "left"
                           }}
                         >
@@ -377,7 +417,7 @@ function Footer() {
                             icon="clock"
                             className="me-2 mt-1"
                             style={{
-                              fontSize: isMobile ? "0.8rem" : "1rem",
+                              fontSize: "0.65rem",
                               minWidth: "1rem",
                               flexShrink: 0
                             }}
@@ -387,29 +427,32 @@ function Footer() {
                       </div>
                     </div>
                   )}
-                </MDBCol>
+                </div>
 
-                <MDBCol xs={6} sm={6} className="text-center">
+                {/* Síguenos */}
+                <div style={{ position: "relative" }}>
                   <div
                     className="dropdown-trigger"
                     onClick={() => toggleDropdown('siguenos')}
                     style={{
                       cursor: "pointer",
-                      padding: isMobile ? "0.75rem 0.5rem" : "1rem",
+                      padding: "0.75rem 0.25rem",
                       backgroundColor: activeDropdown === 'siguenos' ? 'rgba(218, 100, 41, 0.1)' : 'transparent',
                       borderRadius: "8px",
                       transition: "background-color 0.3s ease",
-                      minHeight: "60px",
+                      height: "50px",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      flexDirection: "column"
+                      textAlign: "center",
+                      width: "100%"
                     }}
                   >
                     <h6
                       className="text-uppercase fw-bold mb-0"
                       style={{
-                        fontSize: isMobile ? "0.9rem" : "1.1rem"
+                        fontSize: "0.7rem",
+                        lineHeight: "1.2"
                       }}
                     >
                       Síguenos <MDBIcon icon={activeDropdown === 'siguenos' ? "chevron-up" : "chevron-down"} className="ms-1" size="sm" />
@@ -420,22 +463,28 @@ function Footer() {
                     <div
                       className="dropdown-content"
                       style={{
+                        position: "absolute",
+                        top: "100%",
+                        left: "-20%",
+                        right: "-20%",
+                        zIndex: 1000,
                         marginTop: "0.5rem",
-                        padding: "1rem 0.5rem",
-                        backgroundColor: "rgba(255, 255, 255, 0.1)",
+                        padding: "1rem 0.75rem",
+                        backgroundColor: "rgba(255, 255, 255, 0.95)",
                         borderRadius: "8px",
+                        boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
                         animation: "slideDown 0.3s ease"
                       }}
                     >
                       <div
                         className="d-flex justify-content-center flex-wrap"
-                        style={{ gap: isMobile ? "0.75rem" : "1rem" }}
+                        style={{ gap: "0.75rem" }}
                       >
                         <a
                           href="#!"
                           className="text-reset"
                           style={{
-                            fontSize: isMobile ? "1.25rem" : "1.5rem",
+                            fontSize: "1.1rem",
                             transition: "color 0.3s ease, transform 0.3s ease"
                           }}
                           title="Facebook"
@@ -455,7 +504,7 @@ function Footer() {
                           href="#!"
                           className="text-reset"
                           style={{
-                            fontSize: isMobile ? "1.25rem" : "1.5rem",
+                            fontSize: "1.1rem",
                             transition: "color 0.3s ease, transform 0.3s ease"
                           }}
                           title="Instagram"
@@ -475,7 +524,7 @@ function Footer() {
                           href="#!"
                           className="text-reset"
                           style={{
-                            fontSize: isMobile ? "1.25rem" : "1.5rem",
+                            fontSize: "1.1rem",
                             transition: "color 0.3s ease, transform 0.3s ease"
                           }}
                           title="Twitter"
@@ -495,7 +544,7 @@ function Footer() {
                           href="https://wa.me/34900123456"
                           className="text-reset"
                           style={{
-                            fontSize: isMobile ? "1.25rem" : "1.5rem",
+                            fontSize: "1.1rem",
                             transition: "color 0.3s ease, transform 0.3s ease"
                           }}
                           title="WhatsApp"
@@ -515,8 +564,8 @@ function Footer() {
                       </div>
                     </div>
                   )}
-                </MDBCol>
-              </MDBRow>
+                </div>
+              </div>
             </MDBContainer>
           </section>
         )}

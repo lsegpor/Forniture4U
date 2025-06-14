@@ -326,7 +326,7 @@ function AltaMueble() {
     <>
       <Container
         component="main"
-        maxWidth="md"
+        maxWidth="sm"
         sx={{
           px: { xs: 1, sm: 2, md: 3 },
           py: { xs: 1, sm: 2 }

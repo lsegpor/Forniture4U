@@ -103,7 +103,7 @@ let router = createBrowserRouter([
         element: <DetalleMueble />,
       },
       {
-        path: "checkout",
+        path: "pedidopago",
         element: <PedidoPago />,
       },
       {
